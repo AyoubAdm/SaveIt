@@ -1,0 +1,29 @@
+{
+    "name": "module1",
+    "geometry": [
+      {
+        "type": "box",
+        "position": { "x": 0, "y": 0, "z": 5 },
+        "size": { "width": 10, "height": 1, "depth": 40 }
+      }
+    ],
+    "wasteSpawns": [
+      {
+        "position": { "x": 3, "y": 1, "z": 5 },
+        "type": "plastic"
+      },
+      {
+        "position": { "x": -3, "y": 1, "z": 15 },
+        "type": "plastic"
+      }
+    ],
+    "binSpawns": [
+      {
+        "position": { "x": 0, "y": 1, "z": 9 },
+        "type": "recycling"
+      }
+    ],
+    "entryPoint": { "x": 0, "y": 0, "z": 0 },
+    "exitPoint": { "x": 0, "y": 0, "z": 20 }
+  }
+  
