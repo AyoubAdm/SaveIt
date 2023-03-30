@@ -3,6 +3,8 @@ const engine = new BABYLON.Engine(canvas, true);
 
 const moduleList = ["module1.json"]; // Ajoutez autant de modules que vous le souhaitez
 let currentModuleIndex = 0;
+var GAME_SPEED = 0.2;
+var MAX_GAME_SPEED = 0.7;
 
 
 const createScene = () => {
@@ -36,6 +38,13 @@ const loadModule = async (moduleName) => {
   const response = await fetch(moduleName);
   const moduleData = await response.json();
 
+  // Ajoutez d'autres logiques nécessaires pour positionner et connecter les modules
+  const exitPointData = moduleData.exitPoint;
+  const exitPoint = new BABYLON.MeshBuilder.CreateBox("exitPoint", { size: 1 }, scene);
+  exitPoint.isVisible = false; // Rendez le mesh invisible
+  exitPoint.position = new BABYLON.Vector3(exitPointData.x, exitPointData.y, exitPointData.z);
+  var decalage = exitPointData.z;
+
   // Créez la géométrie de base à partir des données JSON
   moduleData.geometry.forEach((geomData) => {
     if (geomData.type === "box") {
@@ -44,27 +53,27 @@ const loadModule = async (moduleName) => {
         { width: geomData.size.width, height: geomData.size.height, depth: geomData.size.depth },
         scene
       );
-      box.position = new BABYLON.Vector3(geomData.position.x, geomData.position.y, geomData.position.z+8);
+      box.position = new BABYLON.Vector3(geomData.position.x, geomData.position.y, geomData.position.z + decalage);
+
     }
   });
+
 
   // Créez les objets déchets à partir des données JSON
   moduleData.wasteSpawns.forEach((wasteData) => {
     const waste = createWaste(wasteData.type); // Fonction pour créer un objet déchet en fonction du type
-    waste.position = new BABYLON.Vector3(randomXPosition(), wasteData.position.y, wasteData.position.z+8);
+    waste.position = new BABYLON.Vector3(randomXPosition(), wasteData.position.y, wasteData.position.z + decalage);
+    addCollisionDetection(waste);
   });
 
   // Créez les objets poubelles à partir des données JSON
   moduleData.binSpawns.forEach((binData) => {
     const bin = createBin(binData.type); // Fonction pour créer un objet poubelle en fonction du type
-    bin.position = new BABYLON.Vector3(randomXPosition(), binData.position.y, binData.position.z+8);
+    bin.position = new BABYLON.Vector3(randomXPosition(), binData.position.y, binData.position.z + decalage);
+    addCollisionDetection(bin);
   });
 
-  // Ajoutez d'autres logiques nécessaires pour positionner et connecter les modules
-  const exitPointData = moduleData.exitPoint;
-  const exitPoint = new BABYLON.MeshBuilder.CreateBox("exitPoint", { size: 1 }, scene);
-  exitPoint.isVisible = false; // Rendez le mesh invisible
-  exitPoint.position = new BABYLON.Vector3(exitPointData.x, exitPointData.y, exitPointData.z + 8);
+
 };
 
 const loadNextModule = async () => {
@@ -83,6 +92,8 @@ const createPlayer = () => {
   player.material = new BABYLON.StandardMaterial("playerMaterial", scene);
   player.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
   player.isAnimating = false;
+  player.isAlive = true;  
+  player.isInvincible = false;
   return player;
 };
 
@@ -111,20 +122,51 @@ const createBin = (type) => {
 };
 
 const movePlayer = (direction) => {
-  if (player.isAnimating) {
+  if (player.isAnimating || !player.isAlive) {
     return;
   }
+
 
   const targetX = player.position.x + direction;
 
   // Limitez les déplacements du joueur pour qu'il reste sur la plateforme
   if (targetX >= -4 && targetX <= 4) {
+    player.isAnimating = true;
     animatePlayer(targetX);
   }
-  else{
-      bounceAnimation(direction);
+  else {
+    bounceAnimation(direction);
   }
 };
+
+const addCollisionDetection = (mesh) => {
+  const actionManager = new BABYLON.ActionManager(scene);
+  actionManager.registerAction(
+    new BABYLON.ExecuteCodeAction(
+      {
+        trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
+        parameter: { mesh: player },
+      },
+      (evt) => {
+        onPlayerCollision(player, evt.source);
+      }
+    )
+  );
+  mesh.actionManager = actionManager;
+};
+
+const onPlayerCollision = (player, obj) => {
+  // Gérez ici la logique de collision entre le joueur et l'objet
+  if (obj.name === "waste") {
+    obj.dispose();}
+  else if (obj.name === "bin") {
+    if (player.isInvincible) return;
+    GAME_SPEED = 0;
+    player.isAlive = false;
+  }
+  
+};
+
 
 
 const animatePlayer = (targetX) => {
@@ -142,16 +184,18 @@ const animatePlayer = (targetX) => {
 
   const keys = [
     { frame: 0, value: player.position.x },
-    { frame: 8, value: targetX }
+    { frame: 8/(GAME_SPEED*5), value: targetX }
   ];
 
   anim.setKeys(keys);
 
   player.animations = [anim];
-  player.isAnimating = true; 
+  player.isAnimating = true;
+  player.isInvincible = true;
   scene.beginAnimation(player, 0, 30, false).onAnimationEnd = () => {
-    player.isAnimating = false; 
-};
+    player.isAnimating = false;
+    player.isInvincible = false;
+  };
 };
 
 const bounceAnimation = (direction) => {
@@ -203,7 +247,7 @@ const bounceAnimation = (direction) => {
     player.isAnimating = false;
   });
 
-  
+
 };
 
 
@@ -218,14 +262,28 @@ const player = createPlayer();
 // Créez la caméra
 const camera = createCamera(scene, player);
 
+var s = "20 KM/H"
+const increaseGameSpeed = () => {
+  if (GAME_SPEED < MAX_GAME_SPEED) {
+    var s2 = Math.round(GAME_SPEED*100) + " KM/H"
+    if (s2 != s){
+      console.log(s2)
+      s = s2;}
+    GAME_SPEED += 0.0001;
+  }
+}
+
 
 // Chargez et créez un module à partir du fichier JSON
 loadModule("module1.json");
 engine.runRenderLoop(() => {
 
-  moveScene(0.1);
+  if(player.isAlive){
+    increaseGameSpeed();
+  }
+  moveScene(GAME_SPEED);
   const exitPoint = scene.getMeshByName("exitPoint");
-  if (exitPoint && player.position.z > exitPoint.position.z-9) {
+  if (exitPoint && player.position.z > exitPoint.position.z - 5) {
     loadNextModule();
   }
 
