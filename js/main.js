@@ -1,15 +1,17 @@
+import Player from "./player.js";
+
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 
 const moduleList = ["module1.json"]; // Ajoutez autant de modules que vous le souhaitez
 let currentModuleIndex = 0;
-var GAME_SPEED = 0.2;
 var MAX_GAME_SPEED = 0.7;
 
 
 const createScene = () => {
   const scene = new BABYLON.Scene(engine);
   const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+  scene.GAME_SPEED = 0.2;
   light.intensity = 0.7;
   return scene;
 };
@@ -87,19 +89,11 @@ const loadNextModule = async () => {
 
 
 const createPlayer = () => {
-  const player = BABYLON.MeshBuilder.CreateBox("player", { width: 1, height: 2, depth: 1 }, scene);
-  player.position = new BABYLON.Vector3(0, 1, 0);
-  player.material = new BABYLON.StandardMaterial("playerMaterial", scene);
-  player.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
-  player.isAnimating = false;
-  player.isAlive = true;  
-  player.isInvincible = false;
-  return player;
-};
+  return new Player(scene);}
 
 const moveScene = (speed) => {
   scene.meshes.forEach((mesh) => {
-    if (mesh !== player && mesh !== camera) {
+    if (mesh.name !== "Player") {
       mesh.position.z -= speed;
     }
   });
@@ -121,23 +115,6 @@ const createBin = (type) => {
   return bin;
 };
 
-const movePlayer = (direction) => {
-  if (player.isAnimating || !player.isAlive) {
-    return;
-  }
-
-
-  const targetX = player.position.x + direction;
-
-  // Limitez les déplacements du joueur pour qu'il reste sur la plateforme
-  if (targetX >= -4 && targetX <= 4) {
-    player.isAnimating = true;
-    animatePlayer(targetX);
-  }
-  else {
-    bounceAnimation(direction);
-  }
-};
 
 const addCollisionDetection = (mesh) => {
   const actionManager = new BABYLON.ActionManager(scene);
@@ -145,10 +122,10 @@ const addCollisionDetection = (mesh) => {
     new BABYLON.ExecuteCodeAction(
       {
         trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
-        parameter: { mesh: player },
+        parameter: { mesh: player.mesh },
       },
       (evt) => {
-        onPlayerCollision(player, evt.source);
+        onPlayerCollision(player.mesh, evt.source);
       }
     )
   );
@@ -161,94 +138,12 @@ const onPlayerCollision = (player, obj) => {
     obj.dispose();}
   else if (obj.name === "bin") {
     if (player.isInvincible) return;
-    GAME_SPEED = 0;
+    scene.GAME_SPEED = 0;
     player.isAlive = false;
   }
   
 };
 
-
-
-const animatePlayer = (targetX) => {
-  const anim = new BABYLON.Animation(
-    "playerMove",
-    "position.x",
-    30,
-    BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-  );
-
-  const easingFunction = new BABYLON.QuadraticEase();
-  easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-  anim.setEasingFunction(easingFunction);
-
-  const keys = [
-    { frame: 0, value: player.position.x },
-    { frame: 8/(GAME_SPEED*5), value: targetX }
-  ];
-
-  anim.setKeys(keys);
-
-  player.animations = [anim];
-  player.isAnimating = true;
-  player.isInvincible = true;
-  scene.beginAnimation(player, 0, 30, false).onAnimationEnd = () => {
-    player.isAnimating = false;
-    player.isInvincible = false;
-  };
-};
-
-const bounceAnimation = (direction) => {
-  if (player.isAnimating) {
-    return;
-  }
-
-  const startPosition = player.position.clone();
-  const targetPosition = player.position.add(new BABYLON.Vector3(direction * 0.2, 0, 0));
-  const returnPosition = startPosition.clone();
-
-  // Animer la position du joueur vers la nouvelle position
-  const animation1 = new BABYLON.Animation(
-    "animation1",
-    "position",
-    30,
-    BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-  );
-
-  const keys1 = [
-    { frame: 0, value: startPosition },
-    { frame: 20, value: targetPosition },
-  ];
-
-  animation1.setKeys(keys1);
-  player.animations.push(animation1);
-
-  // Animer la position du joueur de retour à sa position d'origine
-  const animation2 = new BABYLON.Animation(
-    "animation2",
-    "position",
-    30,
-    BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-  );
-
-  const keys2 = [
-    { frame: 0, value: targetPosition },
-    { frame: 8, value: returnPosition },
-  ];
-
-  animation2.setKeys(keys2);
-  player.animations.push(animation2);
-
-  // Lancer l'animation
-  player.isAnimating = true;
-  scene.beginAnimation(player, 0, 10, false, 1, () => {
-    player.isAnimating = false;
-  });
-
-
-};
 
 
 
@@ -258,18 +153,19 @@ const scene = createScene();
 
 // Créez le joueur
 const player = createPlayer();
+console.log(player);
 
 // Créez la caméra
-const camera = createCamera(scene, player);
+const camera = createCamera(scene, player.mesh);
 
 var s = "20 KM/H"
 const increaseGameSpeed = () => {
-  if (GAME_SPEED < MAX_GAME_SPEED) {
-    var s2 = Math.round(GAME_SPEED*100) + " KM/H"
+  if (scene.GAME_SPEED < MAX_GAME_SPEED) {
+    var s2 = Math.round(scene.GAME_SPEED*100) + " KM/H"
     if (s2 != s){
       console.log(s2)
       s = s2;}
-    GAME_SPEED += 0.0001;
+    scene.GAME_SPEED += 0.0001;
   }
 }
 
@@ -278,15 +174,14 @@ const increaseGameSpeed = () => {
 loadModule("module1.json");
 engine.runRenderLoop(() => {
 
-  if(player.isAlive){
+  if(player.mesh.isAlive){
     increaseGameSpeed();
   }
-  moveScene(GAME_SPEED);
+  moveScene(scene.GAME_SPEED);
   const exitPoint = scene.getMeshByName("exitPoint");
-  if (exitPoint && player.position.z > exitPoint.position.z - 5) {
+  if (exitPoint && player.mesh.position.z > exitPoint.position.z - 5) {
     loadNextModule();
   }
-
   scene.render();
 });
 
@@ -298,10 +193,10 @@ window.addEventListener("resize", () => {
 window.addEventListener("keydown", (event) => {
   switch (event.key) {
     case "ArrowLeft":
-      movePlayer(-3); // Déplacez le joueur vers la gauche
+      player.movePlayer(-3); // Déplacez le joueur vers la gauche
       break;
     case "ArrowRight":
-      movePlayer(3); // Déplacez le joueur vers la droite
+      player.movePlayer(3); // Déplacez le joueur vers la droite
       break;
   }
 });
