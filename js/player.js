@@ -1,43 +1,67 @@
 class Player {
     constructor(scene) {
         this.scene = scene;
-        this.mesh = this.createPlayerMesh();
+
+        // player.playerBox est un mesh invisible qui servira à détecter les collisions
+        this.playerBox = BABYLON.MeshBuilder.CreateBox("PlayerBox", { width: 0.5, height: 1, depth: 0.5 }, this.scene);
+        this.playerBox.position = new BABYLON.Vector3(0, 0.5, 0.9);
+        this.playerBox.isVisible = false;
+
+        // Les différentes propriétés du joueur
+        this.isAnimating = false;
+        this.isAlive = true;
     }
 
-    createPlayerMesh() {
-        const player = new BABYLON.Mesh("Player", this.scene);
-        BABYLON.SceneLoader.ImportMesh("", "models/", "player_run.glb", this.scene, (newMeshes) => {
-            let imported = newMeshes[0];
-            newMeshes.forEach((mesh) => {
-                mesh.name = "Player";});
-            imported.parent = player;})
-        //On place le joueur au centre de la scène
-        player.position = new BABYLON.Vector3(0, 1, 0);
-        player.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+    //La creation du model 3D du joueur
+    async createPlayerMesh() {
+        return new Promise((resolve, reject) => {
+            BABYLON.SceneLoader.ImportMesh("", "models/", "final2.glb", this.scene, (newMeshes, particleSystems, skeletons, animationGroups) => {
+                let player = new BABYLON.Mesh("Player", this.scene);
+                let imported = newMeshes[0];
+                imported.parent = player;
+                this.animations = animationGroups;
+                newMeshes.forEach((mesh) => {
+                    mesh.name = "Player";
+                });
 
-        //player.playerBox est un mesh invisible qui servira à détecter les collisions
-        player.playerBox = BABYLON.MeshBuilder.CreateBox("PlayerBox", { width: 0.5, height: 1, depth: 0.5 }, this.scene);
-        player.playerBox.parent = player;
-        player.playerBox.position = new BABYLON.Vector3(0, 0.5, 0.9);
-        player.playerBox.isVisible = false;
-        
-        //Les differentes propriétés du joueur
-        player.isAnimating = false;
-        player.isAlive = true;
-        return player;
+                // On place le model au centre de la scène
+                player.position = new BABYLON.Vector3(0, 1, 0);
+                player.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+                this.playerBox.parent = player;
+                resolve(player);
+            }, null, reject);
+        });
     }
+
 
     //Pour déplacer le joueur de gauche à droite
     movePlayer(direction) {
-        if (this.mesh.isAnimating || !this.mesh.isAlive) {
+        if (this.isAnimating || !this.isAlive) {
             return;
         }
         const targetX = this.mesh.position.x + direction;
 
+
         if (targetX >= -4 && targetX <= 4) {
-            this.mesh.isAnimating = true;
+
+            
+            
+            this.isAnimating = true;
+            if (direction == 3) {
+                this.animations[6].speedRatio = 1.3*this.scene.GAME_SPEED*10
+                this.animations[6].play()
+            }
+            else if (direction == -3) {
+                this.animations[4].speedRatio = 1.3*this.scene.GAME_SPEED*10
+                this.animations[4].play()
+            }
             this.animate(targetX);
         } else {
+            if(direction == -3){
+                this.animations[0].speedRatio = 1.3*this.scene.GAME_SPEED*10
+                this.animations[0].play();
+            }
+            
             this.bounceAnimation(direction);
         }
     }
@@ -63,9 +87,9 @@ class Player {
         anim.setKeys(keys);
 
         this.mesh.animations = [anim];
-        this.mesh.isAnimating = true;
+        this.isAnimating = true;
         this.scene.beginAnimation(this.mesh, 0, 30, false).onAnimationEnd = () => {
-            this.mesh.isAnimating = false;
+            this.isAnimating = false;
         };
     }
 
