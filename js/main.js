@@ -78,6 +78,17 @@ const loadModule = async (moduleName) => {
 
 };
 
+const removeCurrentModule = () => {
+      let bin = scene.getMeshByName("bin");
+      let waste = scene.getMeshByName("waste");
+      let box = scene.getMeshByName("box");
+      setTimeout(() => {
+        bin.dispose();
+        waste.dispose();
+        box.dispose();
+      }, 1800);
+    }
+
 const loadNextModule = async () => {
   scene.getMeshByName("exitPoint").dispose();
   const nextModuleIndex = (currentModuleIndex + 1) % moduleList.length;
@@ -93,9 +104,13 @@ const createPlayer = () => {
 
 const moveScene = (speed) => {
   scene.meshes.forEach((mesh) => {
-    if (mesh.name !== "Player") {
+    if ( mesh.name !== "Player" && mesh.name !== "__root__" && mesh.name !== "PlayerBox") {
       mesh.position.z -= speed;
     }
+    else {
+    }
+    
+    
   });
 };
 
@@ -122,7 +137,7 @@ const addCollisionDetection = (mesh) => {
     new BABYLON.ExecuteCodeAction(
       {
         trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
-        parameter: { mesh: player.mesh },
+        parameter: { mesh: player.mesh.playerBox },
       },
       (evt) => {
         onPlayerCollision(player.mesh, evt.source);
@@ -153,7 +168,6 @@ const scene = createScene();
 
 // Créez le joueur
 const player = createPlayer();
-console.log(player);
 
 // Créez la caméra
 const camera = createCamera(scene, player.mesh);
@@ -180,7 +194,9 @@ engine.runRenderLoop(() => {
   moveScene(scene.GAME_SPEED);
   const exitPoint = scene.getMeshByName("exitPoint");
   if (exitPoint && player.mesh.position.z > exitPoint.position.z - 5) {
+    removeCurrentModule();
     loadNextModule();
+
   }
   scene.render();
 });

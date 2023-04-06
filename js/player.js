@@ -5,11 +5,22 @@ class Player {
     }
 
     createPlayerMesh() {
-        const player = BABYLON.MeshBuilder.CreateBox("Player", { width: 1, height: 2, depth: 1 }, this.scene);
+        const player = new BABYLON.Mesh("Player", this.scene);
+        BABYLON.SceneLoader.ImportMesh("", "models/", "player_run.glb", this.scene, (newMeshes) => {
+            let imported = newMeshes[0];
+            newMeshes.forEach((mesh) => {
+                mesh.name = "Player";});
+            imported.parent = player;})
+        //On place le joueur au centre de la scène
         player.position = new BABYLON.Vector3(0, 1, 0);
-        player.material = new BABYLON.StandardMaterial("playerMaterial", this.scene);
-        player.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+        player.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
 
+        //player.playerBox est un mesh invisible qui servira à détecter les collisions
+        player.playerBox = BABYLON.MeshBuilder.CreateBox("PlayerBox", { width: 0.5, height: 1, depth: 0.5 }, this.scene);
+        player.playerBox.parent = player;
+        player.playerBox.position = new BABYLON.Vector3(0, 0.5, 0.9);
+        player.playerBox.isVisible = false;
+        
         //Les differentes propriétés du joueur
         player.isAnimating = false;
         player.isAlive = true;
