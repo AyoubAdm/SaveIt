@@ -9,21 +9,20 @@ class Particle{
                 //Les particules du joueur
         let particleSystem = new BABYLON.ParticleSystem("particles", 20, this.scene);
         particleSystem.particleTexture = new BABYLON.Texture("../textures/speed.png", this.scene);
-        particleSystem.emitter = new BABYLON.Vector3(0, 3, -1);
-        particleSystem.minEmitBox = new BABYLON.Vector3(-1, 0, -0.5);
-        particleSystem.maxEmitBox = new BABYLON.Vector3(1, 0, -0.5);
+        particleSystem.emitter = new BABYLON.Vector3(0, 3, -0.5);
+        particleSystem.minEmitBox = new BABYLON.Vector3(-0.5, 0, -0.5);
+        particleSystem.maxEmitBox = new BABYLON.Vector3(0.5, 0, -0.5);
 
 
         particleSystem.minSize = 0.02;
         particleSystem.maxSize = 0.02;
-        particleSystem.minLifeTime = 0.2;
-        particleSystem.maxLifeTime = 1;
+        particleSystem.minLifeTime = 0.05;
+        particleSystem.maxLifeTime = 0.1;
 
         
-        particleSystem.minAngularSpeed = -0.8;
-        particleSystem.maxAngularSpeed = 0.8;
-        particleSystem.direction1 = new BABYLON.Vector3(-0.2, 0, -10);
-        particleSystem.direction2 = new BABYLON.Vector3(0.2, 0, -10);
+
+        particleSystem.direction1 = new BABYLON.Vector3(0, 0, -5);
+        particleSystem.direction2 = new BABYLON.Vector3(0, 0, -20);
         particleSystem.move = (dir) => {
             if (!this.player.isAlive) {
                 return;
