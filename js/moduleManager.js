@@ -4,9 +4,10 @@ class ModuleManager {
         this.player = player;
         this.particle = particle;
     }
-
-
+    
+    
     moduleList = ["module1.json"]; // Ajoutez autant de modules que vous le souhaitez
+    firstModule = true;
     currentModuleIndex = 0;
 
 
@@ -15,22 +16,30 @@ class ModuleManager {
         const response = await fetch(moduleName);
         const moduleData = await response.json();
 
-        // Ajoutez d'autres logiques nécessaires pour positionner et connecter les modules
+        //Le point de sortie du module. On creer un mesh invisible pour verifier si on a atteint le point de sortie du module
         const exitPointData = moduleData.exitPoint;
         const exitPoint = new BABYLON.MeshBuilder.CreateBox("exitPoint", { size: 1 }, this.scene);
-        exitPoint.isVisible = false; // Rendez le mesh invisible
+        exitPoint.isVisible = false;
         exitPoint.position = new BABYLON.Vector3(exitPointData.x, exitPointData.y, exitPointData.z);
-        var decalage = exitPointData.z;
+        
+        // Décalage entre les modules. Plus c'est grand, plus les modules sont placer loin les uns des autres (et donc on ne les voit pas apparaitre)
+        var decalage = this.firstModule ? 25 : 40;
 
-        // Créez la géométrie de base à partir des données JSON
+        if (this.firstModule) {
+            this.firstModule = false;
+        }
+
+        //La génération du module à partir des données JSON
         moduleData.geometry.forEach((geomData) => {
+
+            //le box est le sol du module
             if (geomData.type === "box") {
                 const box = BABYLON.MeshBuilder.CreateBox(
                     "box",
                     { width: geomData.size.width, height: geomData.size.height, depth: geomData.size.depth },
                     this.scene
                 );
-                box.position = new BABYLON.Vector3(geomData.position.x, geomData.position.y, geomData.position.z + decalage);
+                box.position = new BABYLON.Vector3(geomData.position.x, geomData.position.y, geomData.position.z+decalage );
                 box.material = new BABYLON.StandardMaterial("boxMaterial", this.scene);
                 box.material.diffuseColor = new BABYLON.Color3(0.5, 1.5, 1);
 
@@ -44,7 +53,7 @@ class ModuleManager {
         // Créez les objets déchets à partir des données JSON
         moduleData.wasteSpawns.forEach((wasteData) => {
             const waste = this.createWaste(wasteData.type); // Fonction pour créer un objet déchet en fonction du type
-            waste.position = new BABYLON.Vector3(this.randomXPosition(), 1, wasteData.position.z + decalage);
+            waste.position = new BABYLON.Vector3(this.randomXPosition(), 1.3, wasteData.position.z + decalage);
             this.addCollisionDetection(waste);
         });
 
@@ -59,6 +68,7 @@ class ModuleManager {
     };
 
 
+    //Pour que la position X des dechets et obstacle soit aléatoire
     randomXPosition() {
         const positions = [-3, 0, 3];
         const index = Math.floor(Math.random() * positions.length);
@@ -66,7 +76,9 @@ class ModuleManager {
     }
 
 
+    //Pour charger le prochain module
     async loadNextModule() {
+        //On supprime le point de sortie du module précédent car on l'a déjà atteint.
         this.scene.getMeshByName("exitPoint").dispose();
         const nextModuleIndex = (this.currentModuleIndex + 1) % this.moduleList.length;
         await this.loadModule(this.moduleList[nextModuleIndex]);
@@ -74,39 +86,36 @@ class ModuleManager {
     };
 
 
+    //Fonction pour créer les déchets
     createWaste(type) {
         
         const wasteMaterial = new BABYLON.StandardMaterial("wasteMaterial", this.scene);
-        wasteMaterial.alpha = 1
-        
         wasteMaterial.diffuseTexture = new BABYLON.Texture("../textures/vrai2.png", this.scene);
         wasteMaterial.diffuseTexture.hasAlpha = true;
-        wasteMaterial.backFaceCulling = true;
+
+        //le tableau des faces du cube
         var faceUV = new Array(6);
-        //set all values to zero
+        
+        //On met toute les faces à 0 pour que le cube soit transparent
         for (var i = 0; i < 6; i++) {
             faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
         }
-
-        wasteMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
-        
+    
+        //On met la texture sur la face avant du cube uniquement
         faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);
+        
+        //On crée le cube
         const waste = BABYLON.MeshBuilder.CreateBox("waste", { width : 2, height : 2, depth : 1, faceUV : faceUV}, this.scene);
         waste.material = wasteMaterial;
-        
-        //         let waste = new BABYLON.Mesh("waste", this.scene);
-        //         const result = BABYLON.SceneLoader.ImportMesh(null, "models/", "dechets.glb", this._scene, function (meshes) {
-        //             let imported = meshes[0];
-        //             imported.scaling = new BABYLON.Vector3(5,5,5);
-        //             imported.parent = waste
-        //             meshes.forEach(mesh => {
-        //                 mesh.name = "wasteMesh"
-        //             })
-        // });
 
+        //Pour rendre le déchet plus lumineux
+        wasteMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        
         return waste;
     };
 
+
+    //Fonction pour créer les poubelles
     createBin(type) {
         const bin = BABYLON.MeshBuilder.CreateBox("bin", { width: 2, height: 2, depth: 2 }, this.scene);
         bin.material = new BABYLON.StandardMaterial("binMaterial", this.scene);
@@ -116,6 +125,7 @@ class ModuleManager {
     };
 
 
+    //Fonction pour ajouter la collision entre le joueur et les objets
     addCollisionDetection(mesh) {
         const actionManager = new BABYLON.ActionManager(this.scene);
         actionManager.registerAction(
@@ -133,13 +143,13 @@ class ModuleManager {
     };
 
     onPlayerCollision(player, obj) {
-        // Gérez ici la logique de collision entre le joueur et l'objet
+        //Si le joueur touche un déchet, on le supprime et on augmente le score
         if (obj.name === "waste") {
             obj.dispose();
         }
+        //Si le joueur touche une poubelle, le joueur a perdu, on arrete le jeu et les animations
         else if (obj.name === "bin") {
             if (player.isInvincible) return;
-            this.scene.GAME_SPEED = 0;
             player.isAlive = false;
             this.particle.particleSystem.stop();
             player.animations[8].stop()
@@ -148,24 +158,6 @@ class ModuleManager {
 
     };
 
-
-
-
-
-
-
-
-
-    // const removeCurrentModule = () => {
-    //   let bin = scene.getMeshByName("bin");
-    //   let waste = scene.getMeshByName("waste");
-    //   let box = scene.getMeshByName("box");
-    //   setTimeout(() => {
-    //     bin.dispose();
-    //     waste.dispose();
-    //     box.dispose();
-    //   }, 1800);
-    // }
 }
 
 export default ModuleManager;

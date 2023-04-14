@@ -2,14 +2,15 @@ class Player {
     constructor(scene) {
         this.scene = scene;
 
-        // player.playerBox est un mesh invisible qui servira à détecter les collisions
+        // player.playerBox est un mesh invisible qui sert à détecter les collisions
         this.playerBox = BABYLON.MeshBuilder.CreateBox("PlayerBox", { width: 0.5, height: 1, depth: 0.5 }, this.scene);
         this.playerBox.position = new BABYLON.Vector3(0, 0.5, 0.9);
         this.playerBox.isVisible = false;
 
         // Les différentes propriétés du joueur
-        this.isAnimating = false;
-        this.isAlive = true;
+        this.isAnimating = false; // Pour bloquer les mouvements
+        this.isAlive = true; // Pour savoir si le joueur est en vie
+        this.keyIsDown = false; // Pour empecher le joueur de sortir de la plateforme en maintenant la touche enfoncée
     }
 
     //La creation du model 3D du joueur
@@ -34,35 +35,57 @@ class Player {
     }
 
 
+    //pour empecher le joueur de sortir de la plateforme en maintenant la touche enfoncée
+    releaseKey() {
+        this.keyIsDown = false;
+      }
+      
+
     //Pour déplacer le joueur de gauche à droite
     movePlayer(direction) {
-        if (this.isAnimating || !this.isAlive) {
+        if (this.isAnimating || !this.isAlive || this.keyIsDown) {
+            console.log('Movement blocked: isAnimating:', this.isAnimating, 'isAlive:', this.isAlive, 'keyIsDown:', this.keyIsDown);
             return;
-        }
+          }
+        
+          this.keyIsDown = true;
+
+        // On calcule la position cible du joueur (la ou il va aller)
         const targetX = this.mesh.position.x + direction;
 
-
+        // On vérifie que le joueur ne sort pas de la plateforme
         if (targetX >= -4 && targetX <= 4) {
 
-            
-            
+            // On isAnimating à true pour bloquer les mouvements
             this.isAnimating = true;
+
+            //a droite
             if (direction == 3) {
                 this.animations[6].speedRatio = 1.3*this.scene.GAME_SPEED*10
                 this.animations[6].play()
             }
+            //a gauche
             else if (direction == -3) {
                 this.animations[4].speedRatio = 1.3*this.scene.GAME_SPEED*10
                 this.animations[4].play()
             }
+
+            //On lance l'animation
             this.animate(targetX);
-        } else {
+
+        } 
+        
+        //si le joueur sort de la plateforme
+        else {
+            //de la gauche
             if(direction == -3){
+                //on joue une animation ou le joueur se cogne contre le mur
                 this.animations[0].speedRatio = 1.3*this.scene.GAME_SPEED*10
                 this.animations[0].play();
             }
+            //de la droite TODO
+
             
-            this.bounceAnimation(direction);
         }
     }
 
@@ -87,57 +110,12 @@ class Player {
         anim.setKeys(keys);
 
         this.mesh.animations = [anim];
-        this.isAnimating = true;
         this.scene.beginAnimation(this.mesh, 0, 30, false).onAnimationEnd = () => {
+
             this.isAnimating = false;
         };
     }
 
-    //Pour animer le joueur lorsqu'il touche un bord
-    bounceAnimation(direction) {
-        if (this.isAnimating) {
-            return;
-        } const startPosition = this.mesh.position.clone();
-        const targetPosition = this.mesh.position.add(new BABYLON.Vector3(direction * 0.2, 0, 0));
-        const returnPosition = startPosition.clone();
-
-        const animation1 = new BABYLON.Animation(
-            "animation1",
-            "position",
-            30,
-            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-        );
-
-        const keys1 = [
-            { frame: 0, value: startPosition },
-            { frame: 20, value: targetPosition },
-        ];
-
-        animation1.setKeys(keys1);
-        this.mesh.animations.push(animation1);
-
-        const animation2 = new BABYLON.Animation(
-            "animation2",
-            "position",
-            30,
-            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-        );
-
-        const keys2 = [
-            { frame: 0, value: targetPosition },
-            { frame: 8, value: returnPosition },
-        ];
-
-        animation2.setKeys(keys2);
-        this.mesh.animations.push(animation2);
-
-        this.mesh.isAnimating = true;
-        this.scene.beginAnimation(this.mesh, 0, 10, false, 1, () => {
-            this.mesh.isAnimating = false;
-        });
-    }
 }
 
 export default Player;

@@ -5,10 +5,8 @@ import ModuleManager from "./moduleManager.js";
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 
-
 var MAX_GAME_SPEED = 1;
 var GAME_IS_STARTED = false;
-
 
 const createScene = () => {
   const scene = new BABYLON.Scene(engine);
@@ -23,8 +21,8 @@ const createScene = () => {
 const createCamera = (scene, target) => {
   let camera = new BABYLON.FollowCamera("PlayerFollowCamera", target.position, scene, target);
 
-  camera.radius = 15; // how far from the object to follow
-  camera.heightOffset = 8; // how high above the object to place the camera
+  camera.radius = 12; // how far from the object to follow
+  camera.heightOffset = 7; // how high above the object to place the camera
   camera.rotationOffset = 180; // the viewing angle
   camera.cameraAcceleration = 0.2; // how fast to move
   camera.maxCameraSpeed = 2; // speed limit
@@ -38,10 +36,6 @@ const moveScene = (speed) => {
     if (mesh.name !== "Player" && mesh.name !== "__root__" && mesh.name !== "PlayerBox") {
       mesh.position.z -= speed;    
     }
-
-    else{
-    }
-
   });
 };
 
@@ -66,6 +60,8 @@ const particle = new Particle(scene, player);
 const moduleManager = new ModuleManager(scene, player, particle);
 
 var s = "20 KM/H"
+
+//Fonction qui augmente la vitesse du jeu mais aussi des particules
 const increaseGameSpeed = () => {
   if (scene.GAME_SPEED < MAX_GAME_SPEED) {
     var s2 = Math.round(scene.GAME_SPEED * 100) + " KM/H"
@@ -88,24 +84,28 @@ const increaseGameSpeed = () => {
   }
 }
 
+//Fonction qui démarre le jeu. On passe de l'animation de départ à l'animation de course
 const startGame = () => {
   GAME_IS_STARTED = true;
   player.animations[2].stop();
   player.animations[8].play(true);
 }
 
-// Chargez et créez un module à partir du fichier JSON
+// On charge le premier module
  moduleManager.loadModule("module1.json");
 
 engine.runRenderLoop(() => {
-  if (player.animations.length === 0) return;
+  // Si le jeu est démarré et tant que le joueur est en vie, on augmente la vitesse du jeu
   if (GAME_IS_STARTED) {
     if (player.isAlive) {
       increaseGameSpeed();
+      moveScene(scene.GAME_SPEED);
     }
-    moveScene(scene.GAME_SPEED);
+
+    // On récupère le point de sortie
     const exitPoint = scene.getMeshByName("exitPoint");
-    if (exitPoint && player.mesh.position.z > exitPoint.position.z - 5) {
+    // Si le joueur a atteint le point de sortie, on charge le module suivant
+    if (exitPoint && player.mesh.position.z > exitPoint.position.z ) {
       moduleManager.loadNextModule();
       //removeCurrentModule();
     }
@@ -135,5 +135,18 @@ window.addEventListener("keydown", (event) => {
       startGame();
       break;
   }
+
+
+
+  window.addEventListener("keyup", (event) => {
+    switch (event.key) {
+      case "ArrowLeft":
+      case "ArrowRight":
+        player.releaseKey(); //le joueur peut se déplacer à nouveau
+        break;
+    }
+  });
+  
+
 });
 
