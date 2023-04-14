@@ -15,14 +15,16 @@ const createScene = () => {
   const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
   scene.GAME_SPEED = 0.2;
   light.intensity = 0.7;
+
+  
   return scene;
 };
 
 const createCamera = (scene, target) => {
   let camera = new BABYLON.FollowCamera("PlayerFollowCamera", target.position, scene, target);
 
-  camera.radius = 10; // how far from the object to follow
-  camera.heightOffset = 7; // how high above the object to place the camera
+  camera.radius = 15; // how far from the object to follow
+  camera.heightOffset = 8; // how high above the object to place the camera
   camera.rotationOffset = 180; // the viewing angle
   camera.cameraAcceleration = 0.2; // how fast to move
   camera.maxCameraSpeed = 2; // speed limit
@@ -32,12 +34,13 @@ const createCamera = (scene, target) => {
 
 const moveScene = (speed) => {
   scene.meshes.forEach((mesh) => {
+
     if (mesh.name !== "Player" && mesh.name !== "__root__" && mesh.name !== "PlayerBox") {
-      mesh.position.z -= speed;
-    }
-    else {
+      mesh.position.z -= speed;    
     }
 
+    else{
+    }
 
   });
 };
@@ -49,6 +52,7 @@ const scene = createScene();
 // Créez le joueur
 const player = new Player(scene);
 player.mesh = await player.createPlayerMesh();
+
 player.animations[0].stop();
 player.animations[2].play(true);
 
