@@ -22,8 +22,8 @@ const createScene = () => {
 const createCamera = (scene, target) => {
   let camera = new BABYLON.FollowCamera("PlayerFollowCamera", target.position, scene, target);
 
-  camera.radius = 13; // how far from the object to follow
-  camera.heightOffset = 7; // how high above the object to place the camera
+  camera.radius = 20; // how far from the object to follow
+  camera.heightOffset = 9; // how high above the object to place the camera
   camera.rotationOffset = 180; // the viewing angle
   camera.cameraAcceleration = 0.2; // how fast to move
   camera.maxCameraSpeed = 2; // speed limit
