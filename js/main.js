@@ -5,13 +5,14 @@ import ModuleManager from "./moduleManager.js";
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 
-var MAX_GAME_SPEED = 1;
+var MAX_GAME_SPEED = 0.9;
 var GAME_IS_STARTED = false;
 
 const createScene = () => {
   const scene = new BABYLON.Scene(engine);
   const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-  scene.GAME_SPEED = 0.2;
+  scene.GAME_SPEED = 0.2; 
+  scene.loaded = false;
   light.intensity = 0.7;
 
   
@@ -21,7 +22,7 @@ const createScene = () => {
 const createCamera = (scene, target) => {
   let camera = new BABYLON.FollowCamera("PlayerFollowCamera", target.position, scene, target);
 
-  camera.radius = 12; // how far from the object to follow
+  camera.radius = 13; // how far from the object to follow
   camera.heightOffset = 7; // how high above the object to place the camera
   camera.rotationOffset = 180; // the viewing angle
   camera.cameraAcceleration = 0.2; // how fast to move
@@ -89,10 +90,21 @@ const startGame = () => {
   GAME_IS_STARTED = true;
   player.animations[2].stop();
   player.animations[8].play(true);
-}
+  
+  
+} 
 
-// On charge le premier module
- moduleManager.loadModule("module1.json");
+moduleManager.setup()
+moduleManager.loadModule("module1.json");
+
+// if (!scene.loaded){
+//   console.log("boucle for");
+//   // On charge le premier module
+//   for (let i = 0; i < 3; i++) {
+//     moduleManager.loadModule("module1.json", true);
+//   }
+//   scene.loaded = true;
+// }
 
 engine.runRenderLoop(() => {
   // Si le jeu est démarré et tant que le joueur est en vie, on augmente la vitesse du jeu
@@ -129,7 +141,7 @@ window.addEventListener("keydown", (event) => {
 
       particle.particleSystem.move(3);
       break;
-
+  
     case " ":
       if (GAME_IS_STARTED) return;
       startGame();
