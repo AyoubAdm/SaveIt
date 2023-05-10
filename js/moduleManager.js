@@ -169,8 +169,9 @@ moduleData.treeSpawns.forEach((treeData) => {
     this.currentModuleIndex = nextModuleIndex;
   }
 
+  
   //Fonction pour créer les déchets
-  createWaste(type) {
+createWaste(type) {
     const wasteMaterial = new BABYLON.StandardMaterial(
       "wasteMaterial",
       this.scene
@@ -180,18 +181,19 @@ moduleData.treeSpawns.forEach((treeData) => {
       this.scene
     );
     wasteMaterial.diffuseTexture.hasAlpha = true;
-
+    wasteMaterial.backFaceCulling = false;
+  
     //le tableau des faces du cube
     var faceUV = new Array(6);
-
+  
     //On met toute les faces à 0 pour que le cube soit transparent
     for (var i = 0; i < 6; i++) {
       faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
     }
-
+  
     //On met la texture sur la face avant du cube uniquement
     faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);
-
+  
     //On crée le cube
     const waste = BABYLON.MeshBuilder.CreateBox(
       "waste",
@@ -199,12 +201,47 @@ moduleData.treeSpawns.forEach((treeData) => {
       this.scene
     );
     waste.material = wasteMaterial;
-
+  
     //Pour rendre le déchet plus lumineux
     wasteMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+  
+    //cree une animation rotation rapide 
+    var animationBox = new BABYLON.Animation(
+        "myAnimation",
+        "rotation.y",
+        15 ,
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+    );
 
+    // Animation keys
+    var keys = [];
+    keys.push({
+        frame: 0,
+        value: 0
+    });
+
+    keys.push({
+        frame: 30,
+        value: 2*Math.PI
+    });
+
+    animationBox.setKeys(keys);
+   
+
+    //il faut ajouter l'animation à l'objet
+    waste.animations.push(animationBox);
+     
+
+// Démarrez l'animation
+this.scene.beginAnimation(waste, 0, 240, true);
+
+
+  
     return waste;
   }
+  
+  
 
   createGround() {
     const ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap(
@@ -225,8 +262,8 @@ moduleData.treeSpawns.forEach((treeData) => {
             "textures/grass.jpg",
             this.scene
           );
-            groundMaterial.diffuseTexture.uScale = 20; 
-            groundMaterial.diffuseTexture.vScale = 20;
+            groundMaterial.diffuseTexture.uScale = 7; 
+            groundMaterial.diffuseTexture.vScale = 7;
           
           // Remplacez par le chemin de votre texture
           ground.material = groundMaterial;

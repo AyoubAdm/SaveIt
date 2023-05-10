@@ -44,6 +44,9 @@ const moveScene = (speed) => {
 // Créez la scence
 const scene = createScene();
 
+//activer l'animation de départ
+
+
 // Créez le joueur
 const player = new Player(scene);
 player.mesh = await player.createPlayerMesh();
