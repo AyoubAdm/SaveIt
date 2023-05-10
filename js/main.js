@@ -1,14 +1,21 @@
 import Player from "./player.js";
 import Particle from "./particle.js";
 import ModuleManager from "./moduleManager.js";
+import { setupMenuScreen, updateLoadingScreenVisibility } from "./menuScreen.js";
 
-const canvas = document.getElementById("renderCanvas");
+
+
+
+
+const initGame = async (graphicsQuality) => {
+
+  const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 
 var MAX_GAME_SPEED = 0.9;
 var GAME_IS_STARTED = false;
-
 const createScene = () => {
+  updateLoadingScreenVisibility(true);
   const scene = new BABYLON.Scene(engine);
   const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
   scene.GAME_SPEED = 0.2; 
@@ -19,11 +26,115 @@ const createScene = () => {
   return scene;
 };
 
+const disposeGame = () => {
+  // Arrêtez le moteur de rendu
+  engine.stopRenderLoop();
+
+  // Nettoyez les objets liés à la scène
+  scene.dispose();
+};
+
+
+// function to pause the game
+const pauseGame = () => 
+{
+  if (GAME_IS_STARTED) {
+    if (player.isAlive) {
+      if (scene.isPaused) {
+        scene.isPaused = false;
+        player.animations[8].play(true);
+        //remove pause menu
+        const pauseMenu = document.getElementById("pauseMenu");
+        document.body.removeChild(pauseMenu);
+
+      } else {
+        scene.isPaused = true;
+        GAME_IS_STARTED = false;
+        player.animations[8].stop();
+        player.animations[8].play(false);
+        //show pause menu
+        const pauseMenu = document.createElement("div");
+        pauseMenu.id = "pauseMenu";
+        pauseMenu.style.width = "100%";
+        pauseMenu.style.height = "100%";
+        pauseMenu.style.position = "absolute";
+        pauseMenu.style.top = "0";
+        pauseMenu.style.left = "0";
+        pauseMenu.style.zIndex = "100";
+        pauseMenu.style.backgroundColor = "rgba(0,0,0,0.5)";
+        pauseMenu.style.display = "flex";
+        pauseMenu.style.justifyContent = "center";
+        pauseMenu.style.alignItems = "center";
+        pauseMenu.style.flexDirection = "column";
+
+        //create main menu title
+        const newDiv = document.createElement("div");
+        newDiv.className = "container";
+
+        newDiv.innerHTML = `
+        <svg viewBox="0 0 960 300">
+          <symbol id="s-text">
+            <text text-anchor="middle" x="50%" y="80%">SAVE IT</text>
+          </symbol>
+          <g class="g-ants">
+            <use xlink:href="#s-text" class="text-copy"></use>
+            <use xlink:href="#s-text" class="text-copy"></use>
+            <use xlink:href="#s-text" class="text-copy"></use>
+            <use xlink:href="#s-text" class="text-copy"></use>
+            <use xlink:href="#s-text" class="text-copy"></use>
+          </g>
+        </svg>
+        `;
+
+
+        //create main menu button
+        const pauseButton = document.createElement("button");
+        pauseButton.id = "pauseButtonPlay";
+  
+        pauseButton.innerHTML = "Continue";
+   
+        pauseButton.onclick = function() {
+          document.body.removeChild(pauseMenu);
+          pauseGame();
+        }
+
+        //create main menu button restart
+        const pauseButtonRestart = document.createElement("button");
+        pauseButtonRestart.id = "pauseButtonRestart";
+        pauseButtonRestart.innerHTML = "Restart";
+        pauseButtonRestart.onclick = function() {
+          document.body.removeChild(pauseMenu);
+          disposeGame();
+          initGame();
+        }
+
+        //create main menu button quit
+        const pauseButtonQuit = document.createElement("button");
+        pauseButtonQuit.id = "pauseButtonQuit";
+        pauseButtonQuit.innerHTML = "Quit Game";
+        pauseButtonQuit.onclick = function() {
+          window.location.href = "index.html";
+        }
+
+        //add title and button to the container
+        pauseMenu.appendChild(newDiv);
+        pauseMenu.appendChild(pauseButton);
+        pauseMenu.appendChild(pauseButtonRestart);
+        pauseMenu.appendChild(pauseButtonQuit);
+
+        //add container to the body
+        document.body.appendChild(pauseMenu);
+        
+      }
+    }
+  }
+}
+
 const createCamera = (scene, target) => {
   let camera = new BABYLON.FollowCamera("PlayerFollowCamera", target.position, scene, target);
 
-  camera.radius = 20; // how far from the object to follow
-  camera.heightOffset = 9; // how high above the object to place the camera
+  camera.radius = 13; // how far from the object to follow
+  camera.heightOffset = 7; // how high above the object to place the camera
   camera.rotationOffset = 180; // the viewing angle
   camera.cameraAcceleration = 0.2; // how fast to move
   camera.maxCameraSpeed = 2; // speed limit
@@ -33,9 +144,9 @@ const createCamera = (scene, target) => {
 
 const moveScene = (speed) => {
   scene.meshes.forEach((mesh) => {
-
-    if (mesh.name !== "Player" && mesh.name !== "__root__" && mesh.name !== "PlayerBox") {
-      mesh.position.z -= speed;    
+    if (mesh.name==="drumBoundingBox"){mesh.position.z -= speed;}
+    else if (mesh.name !== "Player" && mesh.name !== "__root__" && mesh.name !== "PlayerBox" && mesh.name!=="Drum") {
+      mesh.position.z -= speed; 
     }
   });
 };
@@ -50,6 +161,7 @@ const scene = createScene();
 // Créez le joueur
 const player = new Player(scene);
 player.mesh = await player.createPlayerMesh();
+
 
 player.animations[0].stop();
 player.animations[2].play(true);
@@ -88,6 +200,17 @@ const increaseGameSpeed = () => {
   }
 }
 
+
+
+
+
+  
+
+window.addEventListener("resize", () => {
+  engine.resize();
+});
+
+
 //Fonction qui démarre le jeu. On passe de l'animation de départ à l'animation de course
 const startGame = () => {
   GAME_IS_STARTED = true;
@@ -98,16 +221,12 @@ const startGame = () => {
 } 
 
 moduleManager.setup()
-moduleManager.loadModule("module1.json");
+await moduleManager.loadModule("module1.json", graphicsQuality);
+updateLoadingScreenVisibility(false);
 
-// if (!scene.loaded){
-//   console.log("boucle for");
-//   // On charge le premier module
-//   for (let i = 0; i < 3; i++) {
-//     moduleManager.loadModule("module1.json", true);
-//   }
-//   scene.loaded = true;
-// }
+
+
+
 
 engine.runRenderLoop(() => {
   // Si le jeu est démarré et tant que le joueur est en vie, on augmente la vitesse du jeu
@@ -121,7 +240,7 @@ engine.runRenderLoop(() => {
     const exitPoint = scene.getMeshByName("exitPoint");
     // Si le joueur a atteint le point de sortie, on charge le module suivant
     if (exitPoint && player.mesh.position.z > exitPoint.position.z ) {
-      moduleManager.loadNextModule();
+      moduleManager.loadNextModule(graphicsQuality);
       //removeCurrentModule();
     }
   }
@@ -149,6 +268,10 @@ window.addEventListener("keydown", (event) => {
       if (GAME_IS_STARTED) return;
       startGame();
       break;
+
+      case "p":
+        pauseGame(); // Mettez le jeu en pause
+        break;
   }
 
 
@@ -164,4 +287,20 @@ window.addEventListener("keydown", (event) => {
   
 
 });
+
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+   setupMenuScreen();
+});
+
+
+document.addEventListener('startEndlessMode', (event) => {
+  const graphics = event.detail.graphics;
+  initGame(graphics);
+
+});
+
+
 

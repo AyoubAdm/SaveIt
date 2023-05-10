@@ -9,3 +9,173 @@ html, body {
     height:100%;
 }
 
+h1 {
+  font-size: 2.5em;
+  margin: 0 0 0.5em;
+}
+#menuContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+@import url(https://fonts.googleapis.com/css?family=Montserrat);
+
+html, body{
+  height: 100%;
+  font-weight: 800;
+  margin: 0;
+  padding: 0;
+}
+
+.selected {
+    color: #ffffff;
+    border: 5px dashed #daef1e;
+}
+
+
+.disabled-button{
+    background-color: #80B74A;
+    color: #999;
+    cursor: not-allowed;
+}
+.menuButton:hover{
+    background-color: #fefefe;
+    transform: scale(1.05);
+    transition: all 0.2s ease-in-out;
+}
+
+.menuButton{
+    transition: all 0.2s ease-in-out;
+}
+
+body{
+  font-family: Arial;
+}
+
+.container {
+  display: flex;
+/*   border:1px solid red; */
+  align-items: center;
+}
+
+svg {
+    display: block;
+    font: 10.5em 'Montserrat';
+    width: 500px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+.text-copy {
+    fill: none;
+    stroke: white;
+    stroke-dasharray: 6% 29%;
+    stroke-width: 5px;
+    stroke-dashoffset: 0%;
+    animation: stroke-offset 5.5s infinite linear;
+}
+.text-copy:nth-child(1){
+    stroke: #80B74A;
+    animation-delay: -1;
+}
+
+.text-copy:nth-child(2){
+    stroke: #74C69D;
+    animation-delay: -2s;
+}
+
+.text-copy:nth-child(3){
+    stroke: #26A65B;
+    animation-delay: -3s;
+}
+
+.text-copy:nth-child(4){
+    stroke: #26A65B;
+    animation-delay: -4s;
+}
+
+.text-copy:nth-child(5){
+    stroke: #117A65;
+    animation-delay: -5s;
+}
+
+
+
+
+@keyframes stroke-offset{
+	100% {stroke-dashoffset: -35%;}
+}
+  
+#pauseMenu {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}    
+  button {
+    margin-top: 20px;
+    background-color: #80B74A;
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-family: din-round,sans-serif;
+    font-weight: 700;
+    letter-spacing: .8px;
+    line-height: 20px;
+    outline: none;
+    overflow: visible;
+    text-align: center;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    transform: translateZ(0);
+    transition: filter .2s;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 200px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  button:after {
+    background-clip: padding-box;
+    background-color: #26A65B;
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    bottom: -4px;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+  
+  button:main,
+  button:focus {
+    user-select: auto;
+  }
+  
+  button:hover:not(:disabled) {
+    filter: brightness(1.1);
+    -webkit-filter: brightness(1.1);
+  }
+  
+  button:disabled {
+    cursor: auto;
+  }
+

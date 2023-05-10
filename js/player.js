@@ -16,7 +16,7 @@ class Player {
     //La creation du model 3D du joueur
     async createPlayerMesh() {
         return new Promise((resolve, reject) => {
-            BABYLON.SceneLoader.ImportMesh("", "models/", "final2.glb", this.scene, (newMeshes, particleSystems, skeletons, animationGroups) => {
+            BABYLON.SceneLoader.ImportMesh("", "models/", "player.glb", this.scene, (newMeshes, particleSystems, skeletons, animationGroups) => {
                 let player = new BABYLON.Mesh("Player", this.scene);
                 let imported = newMeshes[0];
                 imported.parent = player;
@@ -44,7 +44,6 @@ class Player {
     //Pour déplacer le joueur de gauche à droite
     movePlayer(direction) {
         if (this.isAnimating || !this.isAlive || this.keyIsDown) {
-            console.log('Movement blocked: isAnimating:', this.isAnimating, 'isAlive:', this.isAlive, 'keyIsDown:', this.keyIsDown);
             return;
           }
         
