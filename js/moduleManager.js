@@ -122,7 +122,7 @@ class ModuleManager {
     box.position = new BABYLON.Vector3(0, 0, 5);
     box.material = new BABYLON.StandardMaterial("boxMaterial", this.scene);
     box.material.diffuseTexture = new BABYLON.Texture(
-      "textures/sol2.jpg",
+      "textures/sol.jpg",
       this.scene
     );
     box.material.diffuseTexture.uScale = 5;
@@ -187,12 +187,12 @@ class ModuleManager {
 
         if (this.platformCount > 5) {
           box.material.diffuseTexture = new BABYLON.Texture(
-            "textures/sol.jpg",
+            "textures/sol2.jpg",
             this.scene
           );
         } else {
           box.material.diffuseTexture = new BABYLON.Texture(
-            "textures/sol2.jpg",
+            "textures/sol.jpg",
             this.scene
           );
           //retate texture
