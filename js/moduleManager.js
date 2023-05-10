@@ -190,6 +190,7 @@ class ModuleManager {
             "textures/sol2.jpg",
             this.scene
           );
+          box.material.diffuseTexture.wAng = Math.PI / 2;
         } else {
           box.material.diffuseTexture = new BABYLON.Texture(
             "textures/sol.jpg",
