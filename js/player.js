@@ -73,19 +73,7 @@ class Player {
             this.animate(targetX);
 
         } 
-        
-        //si le joueur sort de la plateforme
-        else {
-            //de la gauche
-            if(direction == -3){
-                //on joue une animation ou le joueur se cogne contre le mur
-                this.animations[0].speedRatio = 1.3*this.scene.GAME_SPEED*10
-                this.animations[0].play();
-            }
-            //de la droite TODO
 
-            
-        }
     }
 
 

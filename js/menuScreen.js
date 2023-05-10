@@ -14,7 +14,7 @@ export const setupMenuScreen = () =>{ // Récupération des éléments HTML
 // Création des boutons pour les paramètres
 // Récupération des éléments HTML
 // Variable pour stocker l'option graphique sélectionnée
-let graphics = 'high';
+let graphics = 'medium';
 const menuButtons = document.getElementById('menuButtons');
 const modesButton = document.getElementById('modesButton');
 const settingsButton = document.getElementById('settingsButton');
@@ -68,9 +68,15 @@ lowGraphicsButton.id = 'lowGraphicsButton';
 lowGraphicsButton.className = 'menuButton';
 lowGraphicsButton.textContent = 'Low Graphics';
 
+// Création du bouton Medium Graphics
+const mediumGraphicsButton = document.createElement('button');
+mediumGraphicsButton.id = 'mediumGraphicsButton';
+mediumGraphicsButton.className = 'menuButton';
+mediumGraphicsButton.textContent = 'Medium Graphics';
+
 const highGraphicsButton = document.createElement('button');
 highGraphicsButton.id = 'highGraphicsButton';
-highGraphicsButton.className = 'menuButton selected';
+highGraphicsButton.className = 'menuButton ';
 highGraphicsButton.textContent = 'High Graphics';
 
 
@@ -92,11 +98,29 @@ function showGameModeMenu() {
     backButton.addEventListener('click', showMainMenu);
 }
 
-// Fonction pour afficher les boutons Low Graphics, High Graphics et Back
+
+
+// Fonction pour gérer la sélection des options graphiques
+let selectedGraphicsOption = mediumGraphicsButton;
+// Fonction pour gérer la sélection des options graphiques
+function handleGraphicsSelection(button) {
+    if (selectedGraphicsOption) {
+        selectedGraphicsOption.classList.remove('selected');
+    }
+    selectedGraphicsOption = button;
+    selectedGraphicsOption.classList.add('selected');
+    graphics = button === lowGraphicsButton ? 'low' : (button === mediumGraphicsButton ? 'medium' : 'high');
+}
+
+
+
+
+// Fonction pour afficher les boutons Low Graphics, Medium Graphics, High Graphics et Back
 function showSettingsMenu() {
     menuButtons.innerHTML = '';
-    menuButtons.appendChild(lowGraphicsButton);
     menuButtons.appendChild(highGraphicsButton);
+    menuButtons.appendChild(mediumGraphicsButton); // Ajout du bouton Medium Graphics
+    menuButtons.appendChild(lowGraphicsButton);
     menuButtons.appendChild(backButton);
     backButton.addEventListener('click', showMainMenu);
 
@@ -107,20 +131,19 @@ function showSettingsMenu() {
 }
 
 // Fonction pour gérer la sélection des options graphiques
-let selectedGraphicsOption = highGraphicsButton;
 function handleGraphicsSelection(button) {
     if (selectedGraphicsOption) {
         selectedGraphicsOption.classList.remove('selected');
     }
     selectedGraphicsOption = button;
     selectedGraphicsOption.classList.add('selected');
-    graphics = button === lowGraphicsButton ? 'low' : 'high';
+    graphics = button === lowGraphicsButton ? 'low' : (button === mediumGraphicsButton ? 'medium' : 'high');
 }
 
-// Ajout des événements click pour les boutons Low Graphics et High Graphics
+// Ajout des événements click pour les boutons Low Graphics, Medium Graphics et High Graphics
 lowGraphicsButton.addEventListener('click', () => {handleGraphicsSelection(lowGraphicsButton); graphics = 'low'});
+mediumGraphicsButton.addEventListener('click', () => {handleGraphicsSelection(mediumGraphicsButton); graphics = 'medium'}); // Ajout de l'événement click pour Medium Graphics
 highGraphicsButton.addEventListener('click', () => {handleGraphicsSelection(highGraphicsButton); graphics = 'high'});
-
 // Ajout de l'événement click sur le bouton Settings
 settingsButton.addEventListener('click', showSettingsMenu);
 

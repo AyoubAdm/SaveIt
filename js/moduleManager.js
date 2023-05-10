@@ -1,7 +1,8 @@
 class ModuleManager {
-  constructor(scene, player, particle) {
+  constructor(scene, player, particle, engine) {
     this.scene = scene;
     this.player = player;
+    this.engine = engine;
     this.particle = particle;
     this.loadTreeModel();
     this.graphicsQuality;
@@ -73,7 +74,6 @@ class ModuleManager {
     this.grounds = this.grounds.filter((ground) => {
       if (ground.position.z < -200) {
         ground.dispose();
-        console.log("ground removed");
         return false;
       }
       return true;
@@ -94,10 +94,8 @@ class ModuleManager {
     this.boundingBoxes = this.boundingBoxes.filter((boundingBox) => {
       if (boundingBox.position.z < -5) {
         boundingBox.dispose();
-        console.log("boundingBox removed");
         return false;
       }
-      console.log(boundingBox.position.z);
       return true;
     });
   }
@@ -105,8 +103,15 @@ class ModuleManager {
   moduleList = ["module1.json"]; //Les modules à charger
   currentModuleIndex = 0;
   number = 1;
+  score = 0;
+
 
   wasteTypes = ["plasticBottle.png", "banana.png"];
+
+
+  getScore() {
+    return this.score;
+  }
 
   setup() {
     const box = BABYLON.MeshBuilder.CreateBox(
@@ -117,10 +122,12 @@ class ModuleManager {
     box.position = new BABYLON.Vector3(0, 0, 5);
     box.material = new BABYLON.StandardMaterial("boxMaterial", this.scene);
     box.material.diffuseTexture = new BABYLON.Texture(
-      "textures/vrai2.png",
+      "textures/sol2.jpg",
       this.scene
     );
-
+    box.material.diffuseTexture.uScale = 5;
+    box.material.diffuseTexture.vScale = 1;
+    box.material.diffuseTexture.wAng = Math.PI / 2;
     setInterval(() => {
       this.removeTreesBehindPlayer();
       this.removeWastesBehindPlayer();
@@ -132,12 +139,11 @@ class ModuleManager {
     setInterval(() => {
       this.removeBoundingBoxesBehindPlayer();
     }
-    , 300);
+      , 300);
   }
 
   async loadModule(moduleName, graphicsQuality) {
     this.graphicsQuality = graphicsQuality;
-    console.log(graphicsQuality);
     const response = await fetch(moduleName);
     const moduleData = await response.json();
 
@@ -175,7 +181,7 @@ class ModuleManager {
         box.position = new BABYLON.Vector3(
           geomData.position.x,
           0,
-          this.number * 70
+          this.scene.GAME_SPEED < 0.3 ? this.number * 69.8 : this.number * 69
         );
         box.material = new BABYLON.StandardMaterial("boxMaterial", this.scene);
 
@@ -275,7 +281,7 @@ class ModuleManager {
 
     // Créez les objets arbres à partir des données JSON
     moduleData.treeSpawns.forEach((treeData) => {
-      let treeNumber = graphicsQuality === "high" ? 6 : 1;
+      let treeNumber = graphicsQuality === "high" ? 8 : graphicsQuality === "medium" ? 4 : 0;
       // Afficher 10 arbres à gauche de la route placés aléatoirement et espacés de 10 et pas trop proche de la route
       for (let i = 0; i < treeNumber; i++) {
         const tree = this.createTree(); // Fonction pour créer un objet arbre
@@ -307,6 +313,77 @@ class ModuleManager {
     const positions = [-3, 0, 3];
     const index = Math.floor(Math.random() * positions.length);
     return positions[index];
+  }
+
+  gameOver = (graphicsQuality) => {
+       
+    //show game over menu
+    const gameOverMenu = document.createElement("div");
+    gameOverMenu.id = "gameOverMenu";
+    gameOverMenu.style.width = "100%";
+    gameOverMenu.style.height = "100%";
+    gameOverMenu.style.position = "absolute";
+    gameOverMenu.style.top = "0";
+    gameOverMenu.style.left = "0";
+    gameOverMenu.style.zIndex = "100";
+    gameOverMenu.style.backgroundColor = "rgba(0,0,0,0.5)";
+    gameOverMenu.style.display = "flex";
+    gameOverMenu.style.justifyContent = "center";
+    gameOverMenu.style.alignItems = "center";
+    gameOverMenu.style.flexDirection = "column";
+    //add container to the body
+    document.body.appendChild(gameOverMenu);
+    //create main menu title
+    const newDiv = document.createElement("div");
+    newDiv.className = "container";
+    newDiv.innerHTML = `
+    <svg viewBox="0 0 960 300">
+
+      <symbol id="s-text">
+        <text text-anchor="middle" x="50%" y="80%">GAME OVER</text>
+      </symbol>
+      <g class="g-ants">
+        <use xlink:href="#s-text" class="text-copy"></use>
+        <use xlink:href="#s-text" class="text-copy"></use>
+        <use xlink:href="#s-text" class="text-copy"></use>
+        <use xlink:href="#s-text" class="text-copy"></use>
+        <use xlink:href="#s-text" class="text-copy"></use>
+      </g>
+    </svg>
+    `;
+    //create main menu button
+    const gameOverButton = document.createElement("button");
+    gameOverButton.id = "gameOverButton";
+    gameOverButton.innerHTML = "Try again";
+    gameOverButton.onclick = function() {
+      document.body.removeChild(gameOverMenu);
+      const restartEndlessModeEvent = new CustomEvent('restartEndlessMode', {
+        detail: {
+          graphics: graphicsQuality,
+        }
+      })
+      document.dispatchEvent(restartEndlessModeEvent);
+    }
+
+    //ajouter le score
+    const score = document.createElement("div");
+    score.id = "score";
+    score.innerHTML = "Score : " + this.score;
+    
+
+    //create main menu button quit
+    const gameOverButtonQuit = document.createElement("button");
+    gameOverButtonQuit.id = "gameOverButtonQuit";
+    gameOverButtonQuit.innerHTML = "Quit Game";
+    gameOverButtonQuit.onclick = function() {
+      window.location.href = "index.html";
+    }
+
+    //add title and button to the container
+    gameOverMenu.appendChild(newDiv);
+    gameOverMenu.appendChild(score);
+    gameOverMenu.appendChild(gameOverButton);
+    gameOverMenu.appendChild(gameOverButtonQuit);
   }
 
   //Pour charger le prochain module
@@ -455,14 +532,20 @@ class ModuleManager {
     //Si le joueur touche un déchet, on le supprime et on augmente le score
     if (obj.name === "waste") {
       obj.dispose();
+      this.score += 1;
     }
     //Si le joueur touche une poubelle, le joueur a perdu, on arrete le jeu et les animations
     else if (obj.name === "bin") {
+      //pour debug
       if (player.isInvincible) return;
       player.isAlive = false;
       this.particle.particleSystem.stop();
       player.animations[8].stop();
       player.animations[1].play();
+      setTimeout(() => {
+      this.scene.dispose();
+      this.engine.stopRenderLoop();
+      this.gameOver(this.graphicsQuality)}, 2000);
     }
   }
 }

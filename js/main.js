@@ -11,6 +11,7 @@ const initGame = async (graphicsQuality) => {
 
   const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
+let score = 0;
 
 var MAX_GAME_SPEED = 0.9;
 var GAME_IS_STARTED = false;
@@ -105,7 +106,7 @@ const pauseGame = () =>
         pauseButtonRestart.onclick = function() {
           document.body.removeChild(pauseMenu);
           disposeGame();
-          initGame();
+          initGame(graphicsQuality);
         }
 
         //create main menu button quit
@@ -173,7 +174,7 @@ const camera = createCamera(scene, player.mesh);
 const particle = new Particle(scene, player);
 
 // Créez le gestionnaire de module
-const moduleManager = new ModuleManager(scene, player, particle);
+const moduleManager = new ModuleManager(scene, player, particle,engine);
 
 var s = "20 KM/H"
 
@@ -204,7 +205,6 @@ const increaseGameSpeed = () => {
 
 
 
-  
 
 window.addEventListener("resize", () => {
   engine.resize();
@@ -231,6 +231,7 @@ updateLoadingScreenVisibility(false);
 engine.runRenderLoop(() => {
   // Si le jeu est démarré et tant que le joueur est en vie, on augmente la vitesse du jeu
   if (GAME_IS_STARTED) {
+
     if (player.isAlive) {
       increaseGameSpeed();
       moveScene(scene.GAME_SPEED);
@@ -241,7 +242,6 @@ engine.runRenderLoop(() => {
     // Si le joueur a atteint le point de sortie, on charge le module suivant
     if (exitPoint && player.mesh.position.z > exitPoint.position.z ) {
       moduleManager.loadNextModule(graphicsQuality);
-      //removeCurrentModule();
     }
   }
   scene.render();
@@ -286,6 +286,7 @@ window.addEventListener("keydown", (event) => {
   });
   
 
+
 });
 
 }
@@ -300,7 +301,16 @@ document.addEventListener('startEndlessMode', (event) => {
   const graphics = event.detail.graphics;
   initGame(graphics);
 
+  
 });
+
+  document.addEventListener('restartEndlessMode', (event) => {
+    const graphics = event.detail.graphics;
+    initGame(graphics);
+    
+  });
+
+
 
 
 
