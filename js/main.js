@@ -7,13 +7,12 @@ import { setupMenuScreen, updateLoadingScreenVisibility } from "./menuScreen.js"
 
 
 
-const initGame = async (graphicsQuality) => {
+const initGame = async (graphicsQuality, gameMode) => {
 
   const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
-let score = 0;
 
-var MAX_GAME_SPEED = 0.9;
+var MAX_GAME_SPEED = 1.2;
 var GAME_IS_STARTED = false;
 const createScene = () => {
   updateLoadingScreenVisibility(true);
@@ -21,7 +20,7 @@ const createScene = () => {
   const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
   scene.GAME_SPEED = 0.2; 
   scene.loaded = false;
-  light.intensity = 0.7;
+  light.intensity = 0.8;
 
   
   return scene;
@@ -36,7 +35,7 @@ const disposeGame = () => {
 };
 
 
-// function to pause the game
+// Fonction qui pause le jeu
 const pauseGame = () => 
 {
   if (GAME_IS_STARTED) {
@@ -105,8 +104,9 @@ const pauseGame = () =>
         pauseButtonRestart.innerHTML = "Restart";
         pauseButtonRestart.onclick = function() {
           document.body.removeChild(pauseMenu);
+          document.getElementById("wasteScore").innerHTML = "Collected waste : 0" ;
           disposeGame();
-          initGame(graphicsQuality);
+          initGame(graphicsQuality, gameMode);
         }
 
         //create main menu button quit
@@ -130,6 +130,51 @@ const pauseGame = () =>
     }
   }
 }
+
+// Fonction qui affiche message de victoire
+const win = () => {
+  scene.isPaused = true;
+  GAME_IS_STARTED = false;
+  player.animations[8].stop();
+  player.animations[8].play(false);
+  // Create the win menu
+  const winMenu = document.createElement("div");
+  winMenu.id = "winMenu";
+  winMenu.style.width = "100%";
+  winMenu.style.height = "100%";
+  winMenu.style.position = "absolute";
+  winMenu.style.top = "0";
+  winMenu.style.left = "0";
+  winMenu.style.zIndex = "100";
+  winMenu.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+  winMenu.style.display = "flex";
+  winMenu.style.justifyContent = "center";
+  winMenu.style.alignItems = "center";
+  winMenu.style.flexDirection = "column";
+
+  
+
+  // Create the "You win!" text
+  const winText = document.createElement("h1");
+  winText.textContent = "Level completed";
+  winText.style.color = "white";
+
+  // Create the "Back to Menu" button
+  const backButton = document.createElement("button");
+  backButton.textContent = "Back to Menu";
+  backButton.onclick = function() {
+    document.body.removeChild(winMenu);
+    window.location.href = "index.html";
+  };
+
+  // Add the elements to the win menu
+  winMenu.appendChild(winText);
+  winMenu.appendChild(backButton);
+
+  // Add the win menu to the body
+  document.body.appendChild(winMenu);
+};
+
 
 const createCamera = (scene, target) => {
   let camera = new BABYLON.FollowCamera("PlayerFollowCamera", target.position, scene, target);
@@ -176,14 +221,16 @@ const particle = new Particle(scene, player);
 // Créez le gestionnaire de module
 const moduleManager = new ModuleManager(scene, player, particle,engine);
 
-var s = "20 KM/H"
+var s = Math.round(scene.GAME_SPEED * 100) + " KM/H"
+document.getElementById("speed").innerHTML = "Speed : " + s;
 
 //Fonction qui augmente la vitesse du jeu mais aussi des particules
 const increaseGameSpeed = () => {
+  document.getElementById("speed")
   if (scene.GAME_SPEED < MAX_GAME_SPEED) {
     var s2 = Math.round(scene.GAME_SPEED * 100) + " KM/H"
     if (s2 != s) {
-      console.log(s2)
+      document.getElementById("speed").innerHTML = "Speed : " + s2;
       s = s2;
     }
     scene.GAME_SPEED += 0.0001;
@@ -220,8 +267,14 @@ const startGame = () => {
   
 } 
 
-moduleManager.setup()
-await moduleManager.loadModule("module1.json", graphicsQuality);
+if (gameMode == "endless") {
+
+  moduleManager.setup()
+  await moduleManager.loadModule("module1.json", graphicsQuality);
+}
+else if (gameMode == "level1") {
+  await moduleManager.loadModule("level1.json", graphicsQuality);
+}
 updateLoadingScreenVisibility(false);
 
 
@@ -241,9 +294,15 @@ engine.runRenderLoop(() => {
     const exitPoint = scene.getMeshByName("exitPoint");
     // Si le joueur a atteint le point de sortie, on charge le module suivant
     if (exitPoint && player.mesh.position.z > exitPoint.position.z ) {
-      moduleManager.loadNextModule(graphicsQuality);
+      if(gameMode == "endless"){
+        moduleManager.loadNextModule(graphicsQuality);
     }
+    else if(gameMode.includes("level")){
+      win();
+    }
+
   }
+}
   scene.render();
 });
 
@@ -296,19 +355,19 @@ document.addEventListener('DOMContentLoaded', () => {
    setupMenuScreen();
 });
 
-
+//Recupere l'evenement startGame et lance le jeu en mode endless
 document.addEventListener('startEndlessMode', (event) => {
   const graphics = event.detail.graphics;
-  initGame(graphics);
-
-  
+  initGame(graphics, "endless");
 });
 
-  document.addEventListener('restartEndlessMode', (event) => {
-    const graphics = event.detail.graphics;
-    initGame(graphics);
-    
-  });
+//Recupere l'evenement startGame et lance le jeu en mode level1
+document.addEventListener('startLevel1', (event) => {
+  const graphics = event.detail.graphics;
+  initGame(graphics, "level1");
+});
+
+
 
 
 

@@ -4,7 +4,7 @@
       {
         "type": "box",
         "position": { "x": 0, "y": 0, "z": 0 },
-        "size": { "width": 10, "height": 1, "depth": 180  }
+        "size": { "width": 10, "height": 1, "depth": 90  }
       }
     ],
     "wasteSpawns": [
@@ -21,6 +21,10 @@
       {
         "position": { "x": 0, "y": 1, "z": 18 },
         "type": "recycling"
+      },
+      {
+        "position": { "x": 0, "y": 1, "z": 20 },
+        "type": "recycling"
       }
     ],
     "treeSpawns": [
@@ -32,6 +36,6 @@
       }
     ],  
     "entryPoint": { "x": 0, "y": 0, "z": 0 },
-    "exitPoint": { "x": 0, "y": 0, "z": 10 }
+    "exitPoint": { "x": 0, "y": 0, "z": 20 }
   }
   

@@ -25,6 +25,22 @@ endlessModeButton.id = 'endlessModeButton';
 endlessModeButton.className = 'menuButton';
 endlessModeButton.textContent = 'Endless Mode';
 
+const level1 = document.createElement('button');
+level1.id = 'Level1';
+level1.className = 'menuButton';
+level1.textContent = 'Level 1';
+
+const level2 = document.createElement('button');
+level2.id = 'Level2';
+level2.className = 'menuButton';
+level2.textContent = 'Level 2';
+
+const level3 = document.createElement('button');
+level3.id = 'Level3';
+level3.className = 'menuButton';
+level3.textContent = 'Level 3';
+
+
 // Créez un nouvel élément small avec la classe loading-text
 const loadingTextElement = document.createElement('small');
 loadingTextElement.className = 'loading-text';
@@ -48,6 +64,23 @@ endlessModeButton.addEventListener('click', () => {
     homeScreen.appendChild(loadingTextElement);
 });
 
+level1.addEventListener('click', () => {
+    // Créez un nouvel événement startLevel1 avec la valeur mise à jour de graphics
+    const startLevel1 = new CustomEvent('startLevel1', {
+      detail: {
+        graphics: graphics,
+      }
+    });
+
+    // Déclenchez l'événement
+    document.dispatchEvent(startLevel1);
+
+    menuButtons.style.display = 'none';
+
+    const homeScreen = document.getElementById('homeScreen');
+    homeScreen.appendChild(loadingTextElement);
+});
+
 
 
 
@@ -55,12 +88,16 @@ const levelsButton = document.createElement('button');
 levelsButton.id = 'levelsButton';
 levelsButton.className = 'menuButton';
 levelsButton.textContent = 'Levels';
-levelsButton.classList.add('disabled-button');
 
 const backButton = document.createElement('button');
 backButton.id = 'backButton';
 backButton.className = 'menuButton';
 backButton.textContent = 'Back';
+
+const backButton2 = document.createElement('button');
+backButton2.id = 'backButton2';
+backButton2.className = 'menuButton';
+backButton2.textContent = 'Back';
 
 // Création des boutons pour les paramètres
 const lowGraphicsButton = document.createElement('button');
@@ -96,6 +133,17 @@ function showGameModeMenu() {
     menuButtons.appendChild(levelsButton);
     menuButtons.appendChild(backButton);
     backButton.addEventListener('click', showMainMenu);
+}
+
+// Fonction pour afficher les boutons Level 1, Level 2, Level 3 et Back
+function showLevelsMenu() {
+    menuButtons.innerHTML = '';
+    menuButtons.appendChild(level1);
+    menuButtons.appendChild(level2);
+    menuButtons.appendChild(level3);
+    menuButtons.appendChild(backButton2);
+    backButton2.addEventListener('click', showGameModeMenu);
+
 }
 
 
@@ -149,6 +197,11 @@ settingsButton.addEventListener('click', showSettingsMenu);
 
 // Ajout de l'événement click sur le bouton Game Mode
 modesButton.addEventListener('click', showGameModeMenu);
+
+// Ajout de l'événement click sur le bouton Levels
+levelsButton.addEventListener('click', showLevelsMenu);
+
+
 
 
 }

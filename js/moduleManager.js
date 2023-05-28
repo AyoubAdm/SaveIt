@@ -14,6 +14,7 @@ class ModuleManager {
     this.boundingBoxes = [];
     this.lastGroundZ = 0;
     this.platformCount = 0;
+    this.moduleName;
   }
   async loadTreeModel() {
     const result = await BABYLON.SceneLoader.ImportMeshAsync(
@@ -143,6 +144,7 @@ class ModuleManager {
   }
 
   async loadModule(moduleName, graphicsQuality) {
+    this.moduleName = moduleName;
     this.graphicsQuality = graphicsQuality;
     const response = await fetch(moduleName);
     const moduleData = await response.json();
@@ -158,7 +160,7 @@ class ModuleManager {
     exitPoint.position = new BABYLON.Vector3(
       exitPointData.x,
       exitPointData.y,
-      20
+      exitPointData.z
     );
 
     // Décalage entre les modules. Plus c'est grand, plus les modules sont placer loin les uns des autres (et donc on ne les voit pas apparaitre)
@@ -167,22 +169,34 @@ class ModuleManager {
     this.createGround();
     moduleData.geometry.forEach((geomData) => {
       //le box est le sol du module
+      
+      
       if (geomData.type === "box") {
         const box = BABYLON.MeshBuilder.CreateBox(
           "box",
           {
             width: geomData.size.width,
             height: geomData.size.height,
-            depth: 90,
+            depth: geomData.size.depth,
           },
           this.scene
-        );
-        this.platforms.push(box);
-        box.position = new BABYLON.Vector3(
+          );
+          this.platforms.push(box);
+          if(!moduleName.includes("level")){
+
+          box.position = new BABYLON.Vector3(
           geomData.position.x,
           0,
           this.scene.GAME_SPEED < 0.3 ? this.number * 69.8 : this.number * 69
         );
+        }
+        else{
+          this.createGround(geomData.position.z);
+          box.position = new BABYLON.Vector3(
+            geomData.position.x,
+            0,
+            geomData.position.z);
+          }
         box.material = new BABYLON.StandardMaterial("boxMaterial", this.scene);
 
         if (this.platformCount > 5) {
@@ -201,7 +215,7 @@ class ModuleManager {
         }
 
         //scale texture
-        box.material.diffuseTexture.uScale = 5;
+        box.material.diffuseTexture.uScale = 5
         box.material.diffuseTexture.vScale = 1;
       }
     });
@@ -210,28 +224,82 @@ class ModuleManager {
 
     this.number++;
 
+    //Si le mode de jeu est un niveau, on créer une fin
+    if (moduleName.includes("level")) {
+
+      const finishMaterial = new BABYLON.StandardMaterial(
+        "finishMaterial",
+        this.scene
+      );
+      finishMaterial.diffuseTexture = new BABYLON.Texture(
+        `textures/finish.png`,
+        this.scene
+      );
+      finishMaterial.diffuseTexture.hasAlpha = true;
+      finishMaterial.backFaceCulling = false;
+
+
+       //le tableau des faces du cube
+    var faceUV = new Array(6);
+
+    //On met toute les faces à 0 pour que le cube soit transparent
+    for (var i = 0; i < 6; i++) {
+      faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
+    }
+
+    //On met la texture sur la face avant du cube uniquement
+    faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);
+
+
+      const finish = BABYLON.MeshBuilder.CreateBox(
+        "finish",
+        { width: 10, height: 7, depth: 1, faceUV : faceUV },
+        this.scene
+      );
+      finish.position = new BABYLON.Vector3(
+        0,
+        3,
+        moduleData.finishLine.position.z
+      );
+      
+      finish.material = finishMaterial;
+      finish.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    }
+
     // Créez les objets déchets à partir des données JSON
     moduleData.wasteSpawns.forEach((wasteData) => {
       var item =
         this.wasteTypes[Math.floor(Math.random() * this.wasteTypes.length)];
       const waste = this.createWaste(item); // Fonction pour créer un objet déchet en fonction du type
       waste.position = new BABYLON.Vector3(
-        this.randomXPosition(),
+        moduleName.includes("level") ? wasteData.position.x : this.randomXPosition(),
         1.3,
-        wasteData.position.z * this.number
+        moduleName.includes("level") ? wasteData.position.z : wasteData.position.z * this.number
       );
       this.wasteInstances.push(waste);
       this.addCollisionDetection(waste);
     });
 
     // Créez les objets poubelles à partir des données JSON
-    moduleData.binSpawns.forEach((binData) => {
-      const bin = this.createBin(binData.type); // Fonction pour créer un objet poubelle en fonction du type
-      bin.position = new BABYLON.Vector3(
-        this.randomXPosition(),
-        binData.position.y,
-        binData.position.z * this.number
+    moduleData.binSpawns.forEach((binData,index) => {
+      let rand = Math.random();
+      if ((index === 0 || rand < this.scene.GAME_SPEED || moduleName.includes("level")) ) {
+        const bin = this.createBin(); // Fonction pour créer un objet poubelle 
+      
+        bin.position = new BABYLON.Vector3(
+          moduleName.includes("level") ? binData.position.x : this.randomXPosition(),
+          binData.position.y,
+          moduleName.includes("level") ? binData.position.z : binData.position.z * this.number
+          );
+          if(this.graphicsQuality !== "high"){
+            const hole = this.createHole();
+                  hole.position = new BABYLON.Vector3(
+        bin.position.x,
+        0.5,
+        bin.position.z
       );
+          }
+
       this.obstacleInstances.push(bin);
       this.addCollisionDetection(bin);
       if (graphicsQuality === "high") {
@@ -278,6 +346,7 @@ class ModuleManager {
           }
         );
       }
+    }
     });
 
     // Créez les objets arbres à partir des données JSON
@@ -308,11 +377,16 @@ class ModuleManager {
       }
     });
   }
-
+  lastrandom = 0;
   //Pour que la position X des dechets et obstacle soit aléatoire
   randomXPosition() {
     const positions = [-3, 0, 3];
     const index = Math.floor(Math.random() * positions.length);
+    if (positions[index] === this.lastrandom) {
+      return this.randomXPosition();
+    } else {
+      this.lastrandom = positions[index];
+    }
     return positions[index];
   }
 
@@ -356,26 +430,44 @@ class ModuleManager {
     const gameOverButton = document.createElement("button");
     gameOverButton.id = "gameOverButton";
     gameOverButton.innerHTML = "Try again";
+    let mode =""
+    if (this.moduleName === "module1.json") {
+      mode = "startEndlessMode";
+    }
+    else if (this.moduleName === "level1.json") {
+      mode = "startLevel1";
+    }
     gameOverButton.onclick = function() {
-      document.body.removeChild(gameOverMenu);
-      const restartEndlessModeEvent = new CustomEvent('restartEndlessMode', {
+      document.getElementById("wasteScore").innerHTML = "Collected waste : 0" ;
+      const startModeEvent = new CustomEvent(mode, {
         detail: {
           graphics: graphicsQuality,
         }
       })
-      document.dispatchEvent(restartEndlessModeEvent);
+      document.body.removeChild(gameOverMenu);
+      document.dispatchEvent(startModeEvent);
     }
+    
 
     //ajouter le score
     const score = document.createElement("div");
+    const wasteScore = document.createElement("p");
+    wasteScore.innerHTML = "Waste collected : " + this.score;
+    const speedScore = document.createElement("p");
+    const speed = document.getElementById("speed").innerHTML;
+    speedScore.innerHTML = speed;
     score.id = "score";
-    score.innerHTML = "Score : " + this.score;
+    score.style.color = "white";
+    score.style.fontSize = "30px";
+
+    score.appendChild(wasteScore);
+    score.appendChild(speedScore);
     
 
     //create main menu button quit
     const gameOverButtonQuit = document.createElement("button");
     gameOverButtonQuit.id = "gameOverButtonQuit";
-    gameOverButtonQuit.innerHTML = "Quit Game";
+    gameOverButtonQuit.innerHTML = "Back to menu";
     gameOverButtonQuit.onclick = function() {
       window.location.href = "index.html";
     }
@@ -464,7 +556,7 @@ class ModuleManager {
     return waste;
   }
 
-  createGround() {
+  createGround(z) {
     const ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap(
       "ground",
       "textures/bPuyw.png", // Remplacez par le chemin de votre heightmap
@@ -489,6 +581,7 @@ class ModuleManager {
           // Remplacez par le chemin de votre texture
           ground.material = groundMaterial;
           ground.position.y = 0.7;
+          ground.position.z = z || 0;
           ground.checkCollisions = true;
         },
       },
@@ -499,18 +592,74 @@ class ModuleManager {
   }
 
   //Fonction pour créer les poubelles
-  createBin(type) {
-    const bin = BABYLON.MeshBuilder.CreateBox(
-      "bin",
-      { width: 2, height: 2, depth: 2 },
+  createBin() {
+
+
+    
+    const binMaterial = new BABYLON.StandardMaterial(
+      "binMaterial",
       this.scene
     );
-    bin.material = new BABYLON.StandardMaterial("binMaterial", this.scene);
-    bin.material.diffuseColor = new BABYLON.Color3(0, 0, 1); // Bleu pour les poubelles
-    bin.material.ambientColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    binMaterial.diffuseTexture = new BABYLON.Texture(
+      `textures/bin.png`,
+      this.scene
+    );
+    binMaterial.diffuseTexture.hasAlpha = true;
+    binMaterial.backFaceCulling = false;
+
+
+     //le tableau des faces du cube
+  var faceUV = new Array(6);
+
+  //On met toute les faces à 0 pour que le cube soit transparent
+  for (var i = 0; i < 6; i++) {
+    faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
+  }
+
+  //On met la texture sur la face avant du cube uniquement
+  faceUV[0] = new BABYLON.Vector4(1, 1, 0, 0);  
+  faceUV[1] = new BABYLON.Vector4(0, 0, 1, 1);  
+  faceUV[2] = new BABYLON.Vector4(0, 1, 1, 0.6);  
+  faceUV[3] = new BABYLON.Vector4(0, 0.6, 1, 1);  
+    const bin = BABYLON.MeshBuilder.CreateBox(
+      "bin",
+      { width: 2, height: 3, depth: 2, faceUV: faceUV },
+      this.scene
+    );
+    bin.material = binMaterial;
+    bin.material.emissiveColor = new BABYLON.Color3(1, 1, 1); // Bleu pour les poubelles
     bin.isVisible = this.graphicsQuality === "high" ? false : true;
+
     return bin;
   }
+
+  createHole() {
+    var faceUV = new Array(6);
+    
+    for (var i = 0; i < 6; i++) {
+      faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
+    }
+
+    //On met la texture sur la face avant du cube uniquement
+    faceUV[4] = new BABYLON.Vector4(0, 0, 1, 1);
+
+
+
+    const hole = BABYLON.MeshBuilder.CreateBox(
+      "hole",
+      { width: 1.5, height: 0.2, depth: 1.5, faceUV: faceUV },
+      this.scene
+    );
+    hole.material = new BABYLON.StandardMaterial("holeMaterial", this.scene);
+    hole.material.diffuseTexture = new BABYLON.Texture(
+      "textures/hole.png",
+      this.scene
+      );
+      hole.material.diffuseTexture.hasAlpha = true;
+      hole.rotation.y = Math.PI / 2;
+    return hole;
+  }
+
 
   //Fonction pour ajouter la collision entre le joueur et les objets
   addCollisionDetection(mesh) {
@@ -534,6 +683,7 @@ class ModuleManager {
     if (obj.name === "waste") {
       obj.dispose();
       this.score += 1;
+      document.getElementById("wasteScore").innerHTML = "Collected waste : " + this.score ;
     }
     //Si le joueur touche une poubelle, le joueur a perdu, on arrete le jeu et les animations
     else if (obj.name === "bin") {
