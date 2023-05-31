@@ -30,11 +30,10 @@ const createScene = () => {
   scene.GAME_SPEED = 0.2; 
   scene.loaded = false;
   light.intensity = 0.8;
-  
+
   
   return scene;
 };
-
 
 const disposeGame = () => {
   // Arrêtez le moteur de rendu
@@ -218,12 +217,6 @@ const scene = createScene();
 // Créez le joueur
 const player = new Player(scene);
 player.mesh = await player.createPlayerMesh();
-// Arrêter la musique du menu
-menuMusic.pause();
-menuMusic.currentTime = 0;  // Remettre la musique à zéro
-
-// Commencer la musique du jeu
-gameMusic.play();
 
 
 player.animations[0].stop();
@@ -237,7 +230,8 @@ const particle = new Particle(scene, player);
 
 // Créez le gestionnaire de module
 const moduleManager = new ModuleManager(scene, player, particle,engine);
-
+menuMusic.pause();
+menuMusic.volume=0;
 var s = Math.round(scene.GAME_SPEED * 100) + " KM/H"
 document.getElementById("speed").innerHTML = "Speed : " + s;
 
@@ -277,7 +271,12 @@ window.addEventListener("resize", () => {
 
 //Fonction qui démarre le jeu. On passe de l'animation de départ à l'animation de course
 const startGame = () => {
-    
+    // Arrêter la musique du menu
+   menuMusic.pause();
+   menuMusic.currentTime = 0;  // Remettre la musique à zéro
+   
+   // Commencer la musique du jeu
+   gameMusic.play();
   GAME_IS_STARTED = true;
   player.animations[2].stop();
   player.animations[8].play(true);
@@ -375,8 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isMusicPlaying = false;
   let isMusicMuted = false;
-  menuMusic.volume = 0.5;
-  gameMusic.volume = 0.3;
 
   const musicButton = document.getElementById("musicButton");
   const volumeSlider = document.getElementById("volumeSlider");
@@ -416,7 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('startEndlessMode', (event) => {
   const graphics = event.detail.graphics;
   initGame(graphics, "endless");
-  
 });
 
 //Recupere l'evenement startGame et lance le jeu en mode level1

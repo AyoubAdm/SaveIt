@@ -20,12 +20,30 @@ class ModuleManager {
     const result = await BABYLON.SceneLoader.ImportMeshAsync(
       "",
       "models/",
-      "tree.babylon",
+      "untitled.babylon",
       this.scene
     );
     this.treeModel = result.meshes[0];
+    this.treeModel.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
     this.treeModel.setEnabled(false); // rendre le modèle original invisible
   }
+
+  gameOverSound() {
+    var gameOverSound = new BABYLON.Sound(
+      "gameOverSound",
+      "sounds/deathEffect.wav",
+      this.scene,
+      null,
+      {
+        loop: false,
+        autoplay: true,
+      }
+    );
+
+    gameOverSound.setVolume(0.5);
+
+  }
+
 
   createTree() {
     if (!this.treeModel) {
@@ -391,7 +409,12 @@ class ModuleManager {
   }
 
   gameOver = (graphicsQuality) => {
-       
+    
+
+    //play game over sound effect
+    this.gameOverSound();
+
+    
     //show game over menu
     const gameOverMenu = document.createElement("div");
     gameOverMenu.id = "gameOverMenu";
