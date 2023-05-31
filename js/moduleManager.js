@@ -20,11 +20,11 @@ class ModuleManager {
     const result = await BABYLON.SceneLoader.ImportMeshAsync(
       "",
       "models/",
-      "untitled.babylon",
+      "tree22.babylon",
       this.scene
     );
     this.treeModel = result.meshes[0];
-    this.treeModel.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+    this.treeModel.scaling = new BABYLON.Vector3(0.4, 0.4, 0.4);
     this.treeModel.setEnabled(false); // rendre le modèle original invisible
   }
 
@@ -219,7 +219,7 @@ class ModuleManager {
 
         if (this.platformCount > 5) {
           box.material.diffuseTexture = new BABYLON.Texture(
-            "textures/sol2.jpg",
+            "textures/sol.jpg",
             this.scene
           );
           box.material.diffuseTexture.wAng = Math.PI / 2;
