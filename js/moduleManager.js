@@ -460,6 +460,13 @@ class ModuleManager {
     else if (this.moduleName === "level1.json") {
       mode = "startLevel1";
     }
+    else if (this.moduleName === "level2.json") {
+      mode = "startLevel2";
+    }
+    else if (this.moduleName === "level3.json") {
+      mode = "startLevel3";
+    }
+    
     gameOverButton.onclick = function() {
       document.getElementById("wasteScore").innerHTML = "Collected waste : 0" ;
       const startModeEvent = new CustomEvent(mode, {
