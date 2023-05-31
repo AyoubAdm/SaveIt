@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/default.css">
+    <script src="https://kit.fontawesome.com/fa364181ff.js" crossorigin="anonymous"></script>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="lib/cannon.js"></script>
@@ -18,7 +19,7 @@
     </div>
     <canvas id="renderCanvas"></canvas>
     <div id="homeScreen"
-        style=" position: absolute; width: 100%; height: 100%; background : url('textures/forest-background.jpeg'); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; top : 0">
+        style=" position: absolute; width: 100%; height: 100%; background : url('textures/forest-background.jpeg') no-repeat; background-size: cover; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; top : 0">
         <svg viewBox="0 0 960 300" id="menuSvg"
             style="text-shadow: #f3f0f0 3px 2px 1px; position : absolute; top : 20; transform : scale(1.5)">
             <symbol id="s-text">
@@ -32,7 +33,7 @@
                 <use xlink:href="#s-text" class="text-copy"></use>
             </g>
         </svg>
-
+        
     <div id="menuButtons" style="display: flex; flex-direction: column;">
         <button id="modesButton" class="menuButton">Play</button>
         <button id="settingsButton" class="menuButton">Settings</button>
@@ -41,6 +42,12 @@
 
     <small id="loading-text" style="color :rgba(0,0,0,0.5); display: none;">loading...</small>
     </div>
+    <div id="musicContainer">
+        <button id="musicButton"><i class="fa-solid fa-volume-xmark"></i></button>
+        <input type="range" min="0" max="1" step="0.01" value="0.3" id="volumeSlider">
+    </div>
+    
+    
 
 </body>
 

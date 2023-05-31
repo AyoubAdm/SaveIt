@@ -4,6 +4,15 @@ import ModuleManager from "./moduleManager.js";
 import { setupMenuScreen, updateLoadingScreenVisibility } from "./menuScreen.js";
 
 
+// Créez une nouvelle instance Audio pour la musique du menu
+const menuMusic = new Audio();
+menuMusic.src = 'sounds/menu.wav'; 
+menuMusic.loop = true;
+
+// Créez une nouvelle instance Audio pour la musique du jeu
+const gameMusic = new Audio();
+gameMusic.src = 'sounds/game.wav';
+gameMusic.loop = true;
 
 
 
@@ -21,10 +30,11 @@ const createScene = () => {
   scene.GAME_SPEED = 0.2; 
   scene.loaded = false;
   light.intensity = 0.8;
-
+  
   
   return scene;
 };
+
 
 const disposeGame = () => {
   // Arrêtez le moteur de rendu
@@ -39,6 +49,7 @@ const disposeGame = () => {
 const pauseGame = () => 
 {
   if (GAME_IS_STARTED) {
+    menuMusic.pause();
     if (player.isAlive) {
       if (scene.isPaused) {
         scene.isPaused = false;
@@ -207,6 +218,12 @@ const scene = createScene();
 // Créez le joueur
 const player = new Player(scene);
 player.mesh = await player.createPlayerMesh();
+// Arrêter la musique du menu
+menuMusic.pause();
+menuMusic.currentTime = 0;  // Remettre la musique à zéro
+
+// Commencer la musique du jeu
+gameMusic.play();
 
 
 player.animations[0].stop();
@@ -260,10 +277,12 @@ window.addEventListener("resize", () => {
 
 //Fonction qui démarre le jeu. On passe de l'animation de départ à l'animation de course
 const startGame = () => {
+    
   GAME_IS_STARTED = true;
   player.animations[2].stop();
   player.animations[8].play(true);
   
+ 
   
 } 
 
@@ -352,13 +371,52 @@ window.addEventListener("keydown", (event) => {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-   setupMenuScreen();
+  setupMenuScreen();
+
+  let isMusicPlaying = false;
+  let isMusicMuted = false;
+  menuMusic.volume = 0.5;
+  gameMusic.volume = 0.3;
+
+  const musicButton = document.getElementById("musicButton");
+  const volumeSlider = document.getElementById("volumeSlider");
+  musicButton.addEventListener("click", () => {
+      volumeSlider.style.display = "block"; 
+      if (!isMusicPlaying) {
+          menuMusic.play();
+          isMusicPlaying = true;
+          isMusicMuted = false;
+          musicButton.innerHTML = '<i class="fa-sharp fa-solid fa-volume-high"></i>';
+      } else {
+          if (isMusicMuted) {
+              menuMusic.muted = false;
+              gameMusic.muted = false;
+              isMusicMuted = false;
+              musicButton.innerHTML = '<i class="fa-sharp fa-solid fa-volume-high"></i>';
+          } else {
+              menuMusic.muted = true;
+              gameMusic.muted = true;
+              isMusicMuted = true;
+              musicButton.innerHTML = '<i class="fas fa-volume-mute"></i>';
+          }
+      }
+  });
+
+  volumeSlider.addEventListener("input", () => {
+      let volume = volumeSlider.value;
+      menuMusic.volume = volume;
+      gameMusic.volume = volume;
+  });
 });
+
+
+
 
 //Recupere l'evenement startGame et lance le jeu en mode endless
 document.addEventListener('startEndlessMode', (event) => {
   const graphics = event.detail.graphics;
   initGame(graphics, "endless");
+  
 });
 
 //Recupere l'evenement startGame et lance le jeu en mode level1

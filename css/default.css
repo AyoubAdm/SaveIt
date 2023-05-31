@@ -52,6 +52,51 @@ html, body{
 body{
   font-family: Arial;
 }
+#musicContainer {
+  z-index: 9999;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+#musicButton {
+  background-color: transparent;
+  border: none;
+  font-size: 24px;
+  height: 30px;
+  width: 50px;
+  margin: auto;
+}
+
+#volumeSlider {
+  display: none;
+  margin-left: 10px;
+
+  width: 100px;
+  height: 15px;
+  background: #dad6d6;
+  outline: none;
+  border-radius: 5px;
+}
+
+
+#volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+#musicContainer:hover #volumeSlider {
+  display: inline;
+}
+
 
 .container {
   display: flex;
