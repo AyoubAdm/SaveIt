@@ -79,6 +79,10 @@ Enfin voici le rendu final du jeu :
 ![image](https://github.com/AyoubAdm/SaveIt/assets/64748357/6d62bc65-371a-4636-b672-1096bed5974d)
 
 
+## Demo vidéo
+
+Une démo vidéo du jeu est disponible ici : https://youtu.be/x-UbBz5Dlf4
+
 ### Tester le jeu
 
 Le jeu est testable en ligne : https://save-it-three.vercel.app/  **Attention, le jeu peux mettre un certain temps à charger soyez patient :)**
