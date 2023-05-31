@@ -294,6 +294,14 @@ if (gameMode == "endless") {
 else if (gameMode == "level1") {
   await moduleManager.loadModule("level1.json", graphicsQuality);
 }
+else if (gameMode == "level2") {
+  scene.GAME_SPEED = 0.25;
+  await moduleManager.loadModule("level2.json", graphicsQuality);
+}
+else if (gameMode == "level3") {
+  scene.GAME_SPEED = 0.3;
+  await moduleManager.loadModule("level3.json", graphicsQuality);
+}
 updateLoadingScreenVisibility(false);
 
 
@@ -423,6 +431,16 @@ document.addEventListener('startEndlessMode', (event) => {
 document.addEventListener('startLevel1', (event) => {
   const graphics = event.detail.graphics;
   initGame(graphics, "level1");
+});
+//Recupere l'evenement startGame et lance le jeu en mode level2
+document.addEventListener('startLevel2', (event) => {
+  const graphics = event.detail.graphics;
+  initGame(graphics, "level2");
+});
+//Recupere l'evenement startGame et lance le jeu en mode level3
+document.addEventListener('startLevel3', (event) => {
+  const graphics = event.detail.graphics;
+  initGame(graphics, "level3");
 });
 
 

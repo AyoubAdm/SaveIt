@@ -28,17 +28,17 @@ endlessModeButton.textContent = 'Endless Mode';
 const level1 = document.createElement('button');
 level1.id = 'Level1';
 level1.className = 'menuButton';
-level1.textContent = 'Level 1';
+level1.textContent = 'Level 1 (easy)';
 
 const level2 = document.createElement('button');
 level2.id = 'Level2';
 level2.className = 'menuButton';
-level2.textContent = 'Level 2';
+level2.textContent = 'Level 2 (medium)';
 
 const level3 = document.createElement('button');
 level3.id = 'Level3';
 level3.className = 'menuButton';
-level3.textContent = 'Level 3';
+level3.textContent = 'Level 3 (hard)';
 
 
 // Créez un nouvel élément small avec la classe loading-text
@@ -74,6 +74,38 @@ level1.addEventListener('click', () => {
 
     // Déclenchez l'événement
     document.dispatchEvent(startLevel1);
+
+    menuButtons.style.display = 'none';
+
+    const homeScreen = document.getElementById('homeScreen');
+    homeScreen.appendChild(loadingTextElement);
+});
+level2.addEventListener('click', () => {
+    // Créez un nouvel événement startLevel1 avec la valeur mise à jour de graphics
+    const startLevel2 = new CustomEvent('startLevel2', {
+      detail: {
+        graphics: graphics,
+      }
+    });
+
+    // Déclenchez l'événement
+    document.dispatchEvent(startLevel2);
+
+    menuButtons.style.display = 'none';
+
+    const homeScreen = document.getElementById('homeScreen');
+    homeScreen.appendChild(loadingTextElement);
+});
+level3.addEventListener('click', () => {
+    // Créez un nouvel événement startLevel1 avec la valeur mise à jour de graphics
+    const startLevel3 = new CustomEvent('startLevel3', {
+      detail: {
+        graphics: graphics,
+      }
+    });
+
+    // Déclenchez l'événement
+    document.dispatchEvent(startLevel3);
 
     menuButtons.style.display = 'none';
 
