@@ -4,7 +4,7 @@ class ModuleManager {
     this.player = player;
     this.engine = engine;
     this.particle = particle;
-    this.loadTreeModel();
+    this.loadTreeModels();
     this.graphicsQuality;
     this.treeInstances = [];
     this.wasteInstances = [];
@@ -15,18 +15,29 @@ class ModuleManager {
     this.lastGroundZ = 0;
     this.platformCount = 0;
     this.moduleName;
+    this.treeModels = [];
+
+
   }
-  async loadTreeModel() {
-    const result = await BABYLON.SceneLoader.ImportMeshAsync(
-      "",
-      "models/",
-      "tree22.babylon",
-      this.scene
-    );
-    this.treeModel = result.meshes[0];
-    this.treeModel.scaling = new BABYLON.Vector3(0.4, 0.4, 0.4);
-    this.treeModel.setEnabled(false); // rendre le modèle original invisible
-  }
+  async loadTreeModels() {
+    let modelPaths = ["models/tree22.babylon", "models/tree23.babylon", "models/untitled.babylon", "models/tree22.babylon"];
+    // Ajoutez plus de chemins de modèles d'arbres ici si nécessaire
+
+    for (let i = 0; i < modelPaths.length; i++) {
+        const result = await BABYLON.SceneLoader.ImportMeshAsync("", modelPaths[i], "", this.scene);
+        const model = result.meshes[0];
+        if(modelPaths[i] == "models/tree22.babylon")
+          model.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
+        else
+          model.scaling = new BABYLON.Vector3(0.4, 0.4, 0.4);
+
+        model.setEnabled(false); // rendre le modèle original invisible
+        this.treeModels[i] = model;
+    }
+}
+
+  
+  
 
   gameOverSound() {
     var gameOverSound = new BABYLON.Sound(
@@ -46,16 +57,29 @@ class ModuleManager {
 
 
   createTree() {
-    if (!this.treeModel) {
+    let modelIndex;
+    // Définir l'indice du modèle en fonction de platformCount
+    if (this.platformCount <= 20) {
+      modelIndex = 0;
+    } else if (this.platformCount <= 30) {
+      modelIndex = 1;
+    } else {
+      modelIndex = 2;
+    }
+  
+    if (!this.treeModels[modelIndex]) {
       console.error("Le modèle d'arbre n'a pas été chargé");
       return;
     }
-
+  
     // crée une nouvelle instance de l'arbre
-    const treeInstance = this.treeModel.createInstance("treeInstance");
-
+    const treeInstance = this.treeModels[modelIndex].createInstance("treeInstance");
+  
     return treeInstance;
   }
+  
+  
+  
   removeTreesBehindPlayer() {
     this.treeInstances = this.treeInstances.filter((tree) => {
       if (tree.position.z < -10) {
@@ -216,19 +240,25 @@ class ModuleManager {
             geomData.position.z);
           }
         box.material = new BABYLON.StandardMaterial("boxMaterial", this.scene);
-
-        if (this.platformCount > 5) {
+        if (this.platformCount <= 5) {
           box.material.diffuseTexture = new BABYLON.Texture(
             "textures/sol.jpg",
             this.scene
           );
           box.material.diffuseTexture.wAng = Math.PI / 2;
-        } else {
+        } else if (this.platformCount <= 10) {
           box.material.diffuseTexture = new BABYLON.Texture(
-            "textures/sol.jpg",
+            "textures/sol3.jpg",
             this.scene
           );
           //retate texture
+          box.material.diffuseTexture.wAng = Math.PI / 2;
+        }
+        else {
+          box.material.diffuseTexture = new BABYLON.Texture(
+            "textures/sol6.png",
+            this.scene
+          );
           box.material.diffuseTexture.wAng = Math.PI / 2;
         }
 
