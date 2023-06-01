@@ -75,9 +75,10 @@ Au début, nous nous sommes concentré sur la création de plateforme et d'obsta
 Puis nous avons ajouté une skybox ainsi que des cubes rouges sur le cotés de la plateforme (pour ensuite les remplacer par des arbres) : 
 ![image](https://github.com/AyoubAdm/SaveIt/assets/64748357/51bc7169-d456-4630-9910-8933f76ad2a2)
 
-Enfin voici le rendu final du jeu : 
-![image](https://github.com/AyoubAdm/SaveIt/assets/64748357/6d62bc65-371a-4636-b672-1096bed5974d)
-
+Enfin voici le rendu final du jeu avec un évolution du décor : 
+![image](https://i.ibb.co/GWndg4f/Sans-titre3.png)
+![image](https://ibb.co/HFNBqxC)
+![image](https://ibb.co/J2dyzH2)
 
 ## Demo vidéo
 
