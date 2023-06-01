@@ -81,7 +81,7 @@ Enfin voici le rendu final du jeu :
 
 ## Demo vidéo
 
-Une démo vidéo du jeu est disponible ici : https://youtu.be/x-UbBz5Dlf4
+Une démo vidéo du jeu est disponible ici : [https://youtu.be/x-UbBz5Dlf4](https://youtu.be/9ecRV4X5AbA)
 
 ### Tester le jeu
 
