@@ -77,8 +77,8 @@ Puis nous avons ajouté une skybox ainsi que des cubes rouges sur le cotés de l
 
 Enfin voici le rendu final du jeu avec un évolution du décor : 
 ![image](https://i.ibb.co/GWndg4f/Sans-titre3.png)
-![image](https://ibb.co/HFNBqxC)
-![image](https://ibb.co/J2dyzH2)
+![image](https://i.ibb.co/RvhYcBN/Sans-titre1.png)
+![image](https://i.ibb.co/jG5WLDG/Sans-titre2.png)
 
 ## Demo vidéo
 
