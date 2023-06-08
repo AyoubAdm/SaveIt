@@ -86,7 +86,7 @@ Une démo vidéo du jeu est disponible ici : [https://youtu.be/x-UbBz5Dlf4](http
 
 ### Tester le jeu
 
-Le jeu est testable en ligne : https://save-it-three.vercel.app/  **Attention, le jeu peux mettre un certain temps à charger soyez patient :)**
+Le jeu est testable en ligne : https://www.minuteanime.com/play/SaveIt/  **Attention, le jeu peux mettre un certain temps à charger soyez patient :)**
 
 Ou en local, clonez ce repo et lancer index.html en live server
 
